@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "note": "SYNTHETIC FIXTURE - not a real SerpApi capture. Hand-written so examples/pixel_agent.py runs offline with no API key. Record a real cassette with Quiver.record() against a live key; the format is identical.",
+  "note": "SYNTHETIC FIXTURE - not a real SerpApi capture. Hand-written so examples/pixel_agent.py runs offline with no API key. Record a real cassette with SearchMux.record() against a live key; the format is identical.",
   "entries": [
     {
       "engine_id": "google_shopping",

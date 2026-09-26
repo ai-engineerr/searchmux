@@ -2,7 +2,12 @@
 
 import pytest
 
-from quiver.models import BudgetExceeded, Money, QuiverError, Result
+from searchmux.models import (
+    BudgetExceeded,
+    Money,
+    Result,
+    SearchMuxError,
+)
 
 
 def test_result_keeps_raw_payload() -> None:
@@ -22,5 +27,5 @@ def test_money_formats_with_currency() -> None:
     assert str(Money(amount=79999.0, currency="INR")) == "INR 79999.00"
 
 
-def test_budget_exceeded_is_a_quiver_error() -> None:
-    assert issubclass(BudgetExceeded, QuiverError)
+def test_budget_exceeded_is_a_searchmux_error() -> None:
+    assert issubclass(BudgetExceeded, SearchMuxError)

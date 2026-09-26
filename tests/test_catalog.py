@@ -2,8 +2,8 @@
 
 import pytest
 
-from quiver.catalog import get_engine, load_catalog
-from quiver.models import CatalogError
+from searchmux.catalog import get_engine, load_catalog
+from searchmux.models import CatalogError
 
 
 def test_catalog_loads_the_committed_file() -> None:

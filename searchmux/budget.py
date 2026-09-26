@@ -4,7 +4,7 @@ import logging
 import threading
 from collections import Counter
 
-from quiver.models import BudgetExceeded
+from searchmux.models import BudgetExceeded
 
 logger = logging.getLogger(__name__)
 

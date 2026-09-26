@@ -25,7 +25,7 @@ def test_expected_is_normalized_to_a_list() -> None:
 
 def test_every_expected_engine_is_catalogued() -> None:
     """A typo in the eval set would silently depress every arm."""
-    from quiver.catalog import load_catalog
+    from searchmux.catalog import load_catalog
 
     catalog = load_catalog()
     for case in load_cases(CASES_PATH):
@@ -64,7 +64,7 @@ def test_bm25_retrieval_beats_chance_by_a_wide_margin() -> None:
     The real measured figure goes in the README; this only guards
     against retrieval being outright broken.
     """
-    from quiver.router import Router
+    from searchmux.router import Router
 
     router = Router(llm=NullLLM())
     cases = load_cases(CASES_PATH)

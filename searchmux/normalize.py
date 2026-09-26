@@ -2,8 +2,8 @@
 
 import logging
 
-from quiver.catalog import Engine, get_engine
-from quiver.models import Money, Result
+from searchmux.catalog import Engine, get_engine
+from searchmux.models import Money, Result
 
 logger = logging.getLogger(__name__)
 

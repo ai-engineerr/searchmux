@@ -4,8 +4,8 @@ import threading
 
 import pytest
 
-from quiver.budget import Budget
-from quiver.models import BudgetExceeded
+from searchmux.budget import Budget
+from searchmux.models import BudgetExceeded
 
 
 def test_spend_increments_usage() -> None:

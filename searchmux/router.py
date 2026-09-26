@@ -13,9 +13,9 @@ import os
 
 from rank_bm25 import BM25Okapi
 
-from quiver.catalog import Engine, load_catalog
-from quiver.constants import DEFAULT_ROUTER_TOP_K, ENV_ANTHROPIC_KEY
-from quiver.models import RoutingError
+from searchmux.catalog import Engine, load_catalog
+from searchmux.constants import DEFAULT_ROUTER_TOP_K, ENV_ANTHROPIC_KEY
+from searchmux.models import RoutingError
 
 logger = logging.getLogger(__name__)
 
@@ -217,6 +217,6 @@ def _default_llm() -> object:
             f"routing needs {ENV_ANTHROPIC_KEY}; pass engine= to skip "
             f"routing entirely"
         )
-    from quiver.llm import AnthropicClient
+    from searchmux.llm import AnthropicClient
 
     return AnthropicClient()

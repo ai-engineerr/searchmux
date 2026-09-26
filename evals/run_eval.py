@@ -5,7 +5,7 @@ Three arms:
 1. ``baseline`` reproduces what a single generic search tool asks of a
    model: here are a hundred engine names, pick one. No schemas.
 2. ``bm25-top1`` is retrieval alone. No model, no cost.
-3. ``quiver`` is BM25 top-k narrowing plus schema-constrained
+3. ``searchmux`` is BM25 top-k narrowing plus schema-constrained
    synthesis, which is what ``Router.route`` does.
 
 Arms 1 and 3 call an LLM and cost money, so they run only when
@@ -20,9 +20,9 @@ import os
 from collections.abc import Callable
 from pathlib import Path
 
-from quiver.catalog import load_catalog
-from quiver.constants import ENV_ANTHROPIC_KEY
-from quiver.router import DECISION_SCHEMA, Router
+from searchmux.catalog import load_catalog
+from searchmux.constants import ENV_ANTHROPIC_KEY
+from searchmux.router import DECISION_SCHEMA, Router
 
 logger = logging.getLogger(__name__)
 
@@ -157,7 +157,7 @@ def main() -> None:
     )
 
     if os.getenv(ENV_ANTHROPIC_KEY):
-        from quiver.llm import AnthropicClient
+        from searchmux.llm import AnthropicClient
 
         llm = AnthropicClient()
         rows.append(
@@ -167,7 +167,7 @@ def main() -> None:
         router = Router(llm=llm)
         rows.append(
             score_arm(
-                "quiver (bm25 + schemas)",
+                "searchmux (bm25 + schemas)",
                 lambda intent: router.route(intent)[0],
                 cases,
             )

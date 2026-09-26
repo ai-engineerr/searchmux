@@ -4,8 +4,8 @@ import json
 
 import pytest
 
-from quiver.cassette import Cassette
-from quiver.models import CassetteMiss
+from searchmux.cassette import Cassette
+from searchmux.models import CassetteMiss
 
 
 def test_capture_then_replay_returns_the_body(tmp_path) -> None:

@@ -1,13 +1,13 @@
-"""Quiver: the search layer for AI agents over SerpApi."""
+"""SearchMux: the search layer for AI agents over SerpApi."""
 
-from quiver.client import Quiver
-from quiver.models import (
+from searchmux.client import SearchMux
+from searchmux.models import (
     BudgetExceeded,
     CassetteMiss,
     CatalogError,
     Money,
-    QuiverAPIError,
-    QuiverError,
+    SearchMuxAPIError,
+    SearchMuxError,
     Result,
     RoutingError,
 )
@@ -17,9 +17,9 @@ __all__ = [
     "CassetteMiss",
     "CatalogError",
     "Money",
-    "QuiverAPIError",
-    "Quiver",
-    "QuiverError",
+    "SearchMuxAPIError",
+    "SearchMux",
+    "SearchMuxError",
     "Result",
     "RoutingError",
 ]

@@ -3,8 +3,8 @@
 import httpx
 import pytest
 
-from quiver.models import QuiverAPIError
-from quiver.transport import Transport
+from searchmux.models import SearchMuxAPIError
+from searchmux.transport import Transport
 
 
 def _transport(handler: httpx.MockTransport) -> Transport:
@@ -32,7 +32,7 @@ def test_four_xx_raises_without_retry() -> None:
         calls["n"] += 1
         return httpx.Response(401, json={"error": "bad key"})
 
-    with pytest.raises(QuiverAPIError, match="bad key"):
+    with pytest.raises(SearchMuxAPIError, match="bad key"):
         _transport(httpx.MockTransport(handler)).fetch("google", {"q": "x"})
     assert calls["n"] == 1
 
@@ -45,7 +45,7 @@ def test_five_xx_retries_then_raises() -> None:
         return httpx.Response(503)
 
     t = _transport(httpx.MockTransport(handler))
-    with pytest.raises(QuiverAPIError):
+    with pytest.raises(SearchMuxAPIError):
         t.fetch("google", {"q": "x"})
     assert calls["n"] == 3
 

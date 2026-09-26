@@ -1,6 +1,6 @@
 """Tests for cache keying and the SQLite cache."""
 
-from quiver.cache import Cache, request_key
+from searchmux.cache import Cache, request_key
 
 
 def test_key_ignores_param_order() -> None:

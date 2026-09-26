@@ -2,8 +2,8 @@
 
 import pytest
 
-from quiver.models import RoutingError
-from quiver.router import Router
+from searchmux.models import RoutingError
+from searchmux.router import Router
 
 
 class FakeLLM:

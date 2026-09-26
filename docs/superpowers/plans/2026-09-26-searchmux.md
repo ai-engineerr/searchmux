@@ -1,4 +1,4 @@
-# Quiver Implementation Plan
+# SearchMux Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.11+, `httpx`, `pydantic`, `rank-bm25`, `anthropic` (router only), stdlib `sqlite3` for cache.
 
-**Spec:** `docs/superpowers/specs/2026-09-26-quiver-design.md`
+**Spec:** `docs/superpowers/specs/2026-09-26-searchmux-design.md`
 
 ## Global Constraints
 
@@ -22,7 +22,7 @@ Copied verbatim from the spec and `code-rules/`. Every task's requirements impli
 - Google-style docstrings, concise and accurate.
 - Use `logging`, never `print`. Catch specific exceptions; **no bare `except:`**.
 - **Never hardcode secrets.** API keys come from `os.getenv()` only.
-- **No hardcoded values** — all strings, URLs, and config live in `quiver/constants.py`.
+- **No hardcoded values** — all strings, URLs, and config live in `searchmux/constants.py`.
 - Prefer built-ins and stdlib when feasible. No unnecessary abstractions.
 - Generate unit-testable code: pure functions, dependency injection for side effects.
 - **The entire test suite must pass with `SERPAPI_API_KEY` unset.** CI enforces this.
@@ -43,13 +43,13 @@ Five failure modes the spec implies but no task's happy-path tests exercise, mos
 ### Task 1: Package skeleton, constants, models
 
 **Files:**
-- Create: `quiver/__init__.py`, `quiver/constants.py`, `quiver/models.py`
+- Create: `searchmux/__init__.py`, `searchmux/constants.py`, `searchmux/models.py`
 - Create: `requirements.txt`, `.env.example`, `pyproject.toml`
 - Test: `tests/test_models.py`
 
 **Interfaces:**
 - Consumes: nothing.
-- Produces: `Result`, `Money`, and the exception hierarchy `QuiverError`, `BudgetExceeded`, `RoutingError`, `CassetteMiss`, `QuiverAPIError`, `CatalogError`. Every later task imports from `quiver.models`. Constants `SERPAPI_BASE_URL`, `ENV_API_KEY`, `DEFAULT_CACHE_PATH`, `DEFAULT_BUDGET`, `TTL_BY_CLASS`, `HTTP_TIMEOUT`, `HTTP_MAX_RETRIES` live in `quiver.constants`.
+- Produces: `Result`, `Money`, and the exception hierarchy `SearchMuxError`, `BudgetExceeded`, `RoutingError`, `CassetteMiss`, `SearchMuxAPIError`, `CatalogError`. Every later task imports from `searchmux.models`. Constants `SERPAPI_BASE_URL`, `ENV_API_KEY`, `DEFAULT_CACHE_PATH`, `DEFAULT_BUDGET`, `TTL_BY_CLASS`, `HTTP_TIMEOUT`, `HTTP_MAX_RETRIES` live in `searchmux.constants`.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -58,7 +58,7 @@ Five failure modes the spec implies but no task's happy-path tests exercise, mos
 
 import pytest
 
-from quiver.models import BudgetExceeded, Money, QuiverError, Result
+from searchmux.models import BudgetExceeded, Money, SearchMuxError, Result
 
 
 def test_result_keeps_raw_payload() -> None:
@@ -78,18 +78,18 @@ def test_money_formats_with_currency() -> None:
     assert str(Money(amount=79999.0, currency="INR")) == "INR 79999.00"
 
 
-def test_budget_exceeded_is_a_quiver_error() -> None:
-    assert issubclass(BudgetExceeded, QuiverError)
+def test_budget_exceeded_is_a_searchmux_error() -> None:
+    assert issubclass(BudgetExceeded, SearchMuxError)
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_models.py -v`
-Expected: FAIL with `ModuleNotFoundError: No module named 'quiver'`
+Expected: FAIL with `ModuleNotFoundError: No module named 'searchmux'`
 
 - [ ] **Step 3: Write minimal implementation**
 
-`quiver/constants.py`:
+`searchmux/constants.py`:
 
 ```python
 """Project-wide constants. No hardcoded values elsewhere."""
@@ -98,7 +98,7 @@ SERPAPI_BASE_URL = "https://serpapi.com/search"
 ENV_API_KEY = "SERPAPI_API_KEY"
 ENV_ANTHROPIC_KEY = "ANTHROPIC_API_KEY"
 
-DEFAULT_CACHE_PATH = ".quiver.db"
+DEFAULT_CACHE_PATH = ".searchmux.db"
 DEFAULT_BUDGET = 50
 DEFAULT_ROUTER_TOP_K = 5
 
@@ -122,35 +122,35 @@ DEFAULT_TTL_CLASS = "news"
 SECRET_PARAM_KEYS = frozenset({"api_key", "serp_api_key"})
 ```
 
-`quiver/models.py`:
+`searchmux/models.py`:
 
 ```python
-"""Value objects and the exception hierarchy for Quiver."""
+"""Value objects and the exception hierarchy for SearchMux."""
 
 from dataclasses import dataclass, field
 
 
-class QuiverError(Exception):
-    """Base class for every error Quiver raises."""
+class SearchMuxError(Exception):
+    """Base class for every error SearchMux raises."""
 
 
-class BudgetExceeded(QuiverError):
+class BudgetExceeded(SearchMuxError):
     """Raised before a request that would exceed the credit budget."""
 
 
-class RoutingError(QuiverError):
+class RoutingError(SearchMuxError):
     """Raised when intent cannot be resolved to an engine."""
 
 
-class CassetteMiss(QuiverError):
+class CassetteMiss(SearchMuxError):
     """Raised on a replay miss. Never falls through to network."""
 
 
-class QuiverAPIError(QuiverError):
+class SearchMuxAPIError(SearchMuxError):
     """Raised on a non-retryable SerpApi response."""
 
 
-class CatalogError(QuiverError):
+class CatalogError(SearchMuxError):
     """Raised when an engine is absent from the catalog."""
 
 
@@ -191,18 +191,18 @@ class Result:
     raw: dict = field(default_factory=dict)
 ```
 
-`quiver/__init__.py`:
+`searchmux/__init__.py`:
 
 ```python
-"""Quiver: the search layer for AI agents over SerpApi."""
+"""SearchMux: the search layer for AI agents over SerpApi."""
 
-from quiver.models import (
+from searchmux.models import (
     BudgetExceeded,
     CassetteMiss,
     CatalogError,
     Money,
-    QuiverAPIError,
-    QuiverError,
+    SearchMuxAPIError,
+    SearchMuxError,
     Result,
     RoutingError,
 )
@@ -212,8 +212,8 @@ __all__ = [
     "CassetteMiss",
     "CatalogError",
     "Money",
-    "QuiverAPIError",
-    "QuiverError",
+    "SearchMuxAPIError",
+    "SearchMuxError",
     "Result",
     "RoutingError",
 ]
@@ -247,7 +247,7 @@ Expected: 4 passed
 - [ ] **Step 5: Commit**
 
 ```bash
-git add quiver tests requirements.txt .env.example pyproject.toml
+git add searchmux tests requirements.txt .env.example pyproject.toml
 git commit -m "feat: package skeleton, constants, value objects"
 ```
 
@@ -256,11 +256,11 @@ git commit -m "feat: package skeleton, constants, value objects"
 ### Task 2: Engine catalog
 
 **Files:**
-- Create: `quiver/catalog.py`, `quiver/catalog.json`, `scripts/build_catalog.py`
+- Create: `searchmux/catalog.py`, `searchmux/catalog.json`, `scripts/build_catalog.py`
 - Test: `tests/test_catalog.py`
 
 **Interfaces:**
-- Consumes: `CatalogError` from `quiver.models`; `TTL_BY_CLASS` from `quiver.constants`.
+- Consumes: `CatalogError` from `searchmux.models`; `TTL_BY_CLASS` from `searchmux.constants`.
 - Produces: `Engine` dataclass with fields `engine_id: str`, `description: str`, `keywords: list[str]`, `params: dict`, `results_key: str`, `result_map: dict`, `ttl_class: str`. Functions `load_catalog(path: str | None = None) -> dict[str, Engine]` and `get_engine(engine_id: str) -> Engine`. Task 4 uses `results_key`/`result_map`, Task 5 uses `ttl_class`, Task 9 uses `description`/`keywords`/`params`.
 
 - [ ] **Step 1: Write the failing test**
@@ -270,8 +270,8 @@ git commit -m "feat: package skeleton, constants, value objects"
 
 import pytest
 
-from quiver.catalog import get_engine, load_catalog
-from quiver.models import CatalogError
+from searchmux.catalog import get_engine, load_catalog
+from searchmux.models import CatalogError
 
 
 def test_catalog_loads_the_committed_file() -> None:
@@ -308,11 +308,11 @@ def test_every_engine_declares_a_required_param() -> None:
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_catalog.py -v`
-Expected: FAIL with `ModuleNotFoundError: No module named 'quiver.catalog'`
+Expected: FAIL with `ModuleNotFoundError: No module named 'searchmux.catalog'`
 
 - [ ] **Step 3: Write minimal implementation**
 
-`quiver/catalog.py`:
+`searchmux/catalog.py`:
 
 ```python
 """Load and query the generated engine catalog."""
@@ -323,8 +323,8 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 
-from quiver.constants import DEFAULT_TTL_CLASS
-from quiver.models import CatalogError
+from searchmux.constants import DEFAULT_TTL_CLASS
+from searchmux.models import CatalogError
 
 logger = logging.getLogger(__name__)
 
@@ -410,7 +410,7 @@ def get_engine(engine_id: str) -> Engine:
         raise CatalogError(f"unknown engine: {engine_id}") from exc
 ```
 
-`quiver/catalog.json` — seed with these 25 records. Full shape shown for the first three; follow the identical shape for the rest.
+`searchmux/catalog.json` — seed with these 25 records. Full shape shown for the first three; follow the identical shape for the rest.
 
 ```json
 [
@@ -505,7 +505,7 @@ Expected: 4 passed
 - [ ] **Step 5: Commit**
 
 ```bash
-git add quiver/catalog.py quiver/catalog.json scripts tests/test_catalog.py
+git add searchmux/catalog.py searchmux/catalog.json scripts tests/test_catalog.py
 git commit -m "feat: engine catalog with 25 seeded engines"
 ```
 
@@ -514,11 +514,11 @@ git commit -m "feat: engine catalog with 25 seeded engines"
 ### Task 3: Transport
 
 **Files:**
-- Create: `quiver/transport.py`
+- Create: `searchmux/transport.py`
 - Test: `tests/test_transport.py`
 
 **Interfaces:**
-- Consumes: `SERPAPI_BASE_URL`, `HTTP_TIMEOUT`, `HTTP_MAX_RETRIES`, `HTTP_BACKOFF_BASE` from `quiver.constants`; `QuiverAPIError` from `quiver.models`.
+- Consumes: `SERPAPI_BASE_URL`, `HTTP_TIMEOUT`, `HTTP_MAX_RETRIES`, `HTTP_BACKOFF_BASE` from `searchmux.constants`; `SearchMuxAPIError` from `searchmux.models`.
 - Produces: `Transport` class with `__init__(self, api_key: str, client: httpx.Client | None = None)` and `fetch(self, engine_id: str, params: dict) -> dict` returning the raw decoded JSON body. Tasks 5, 6, 7 and 8 wrap this.
 
 - [ ] **Step 1: Write the failing test**
@@ -529,8 +529,8 @@ git commit -m "feat: engine catalog with 25 seeded engines"
 import httpx
 import pytest
 
-from quiver.models import QuiverAPIError
-from quiver.transport import Transport
+from searchmux.models import SearchMuxAPIError
+from searchmux.transport import Transport
 
 
 def _transport(handler: httpx.MockTransport) -> Transport:
@@ -558,7 +558,7 @@ def test_four_xx_raises_without_retry() -> None:
         calls["n"] += 1
         return httpx.Response(401, json={"error": "bad key"})
 
-    with pytest.raises(QuiverAPIError, match="bad key"):
+    with pytest.raises(SearchMuxAPIError, match="bad key"):
         _transport(httpx.MockTransport(handler)).fetch("google", {"q": "x"})
     assert calls["n"] == 1
 
@@ -571,7 +571,7 @@ def test_five_xx_retries_then_raises() -> None:
         return httpx.Response(503)
 
     t = _transport(httpx.MockTransport(handler))
-    with pytest.raises(QuiverAPIError):
+    with pytest.raises(SearchMuxAPIError):
         t.fetch("google", {"q": "x"})
     assert calls["n"] == 3
 
@@ -592,7 +592,7 @@ def test_five_xx_then_success_returns_body() -> None:
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_transport.py -v`
-Expected: FAIL with `ModuleNotFoundError: No module named 'quiver.transport'`
+Expected: FAIL with `ModuleNotFoundError: No module named 'searchmux.transport'`
 
 - [ ] **Step 3: Write minimal implementation**
 
@@ -604,13 +604,13 @@ import time
 
 import httpx
 
-from quiver.constants import (
+from searchmux.constants import (
     HTTP_BACKOFF_BASE,
     HTTP_MAX_RETRIES,
     HTTP_TIMEOUT,
     SERPAPI_BASE_URL,
 )
-from quiver.models import QuiverAPIError
+from searchmux.models import SearchMuxAPIError
 
 logger = logging.getLogger(__name__)
 
@@ -648,7 +648,7 @@ class Transport:
             The decoded JSON response body.
 
         Raises:
-            QuiverAPIError: On a 4xx, or after retries are exhausted.
+            SearchMuxAPIError: On a 4xx, or after retries are exhausted.
         """
         query = {**params, "engine": engine_id, "api_key": self._api_key}
         last_error: Exception | None = None
@@ -665,11 +665,11 @@ class Transport:
                 if response.status_code < 400:
                     return response.json()
                 if response.status_code < 500:
-                    raise QuiverAPIError(
+                    raise SearchMuxAPIError(
                         f"{engine_id} returned {response.status_code}: "
                         f"{self._error_text(response)}"
                     )
-                last_error = QuiverAPIError(
+                last_error = SearchMuxAPIError(
                     f"{engine_id} returned {response.status_code}"
                 )
                 logger.warning(
@@ -679,7 +679,7 @@ class Transport:
             if attempt < HTTP_MAX_RETRIES - 1:
                 time.sleep(HTTP_BACKOFF_BASE * (2**attempt))
 
-        raise QuiverAPIError(
+        raise SearchMuxAPIError(
             f"{engine_id} failed after {HTTP_MAX_RETRIES} attempts"
         ) from last_error
 
@@ -700,7 +700,7 @@ Expected: 4 passed
 - [ ] **Step 5: Commit**
 
 ```bash
-git add quiver/transport.py tests/test_transport.py
+git add searchmux/transport.py tests/test_transport.py
 git commit -m "feat: SerpApi transport with 5xx retry, no 4xx retry"
 ```
 
@@ -709,11 +709,11 @@ git commit -m "feat: SerpApi transport with 5xx retry, no 4xx retry"
 ### Task 4: Normalizer
 
 **Files:**
-- Create: `quiver/normalize.py`
+- Create: `searchmux/normalize.py`
 - Test: `tests/test_normalize.py`
 
 **Interfaces:**
-- Consumes: `get_engine` and `Engine` from `quiver.catalog`; `Money`, `Result` from `quiver.models`.
+- Consumes: `get_engine` and `Engine` from `searchmux.catalog`; `Money`, `Result` from `searchmux.models`.
 - Produces: `normalize(engine_id: str, body: dict) -> list[Result]`. Task 8 calls it.
 
 - [ ] **Step 1: Write the failing test**
@@ -723,7 +723,7 @@ Covers Review Focus item 3 — a missing `results_key` must yield `[]`, not rais
 ```python
 """Tests for envelope normalization across engines."""
 
-from quiver.normalize import normalize
+from searchmux.normalize import normalize
 
 
 def test_organic_results_map_to_common_shape() -> None:
@@ -787,7 +787,7 @@ def test_item_without_title_is_skipped_not_fatal() -> None:
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_normalize.py -v`
-Expected: FAIL with `ModuleNotFoundError: No module named 'quiver.normalize'`
+Expected: FAIL with `ModuleNotFoundError: No module named 'searchmux.normalize'`
 
 - [ ] **Step 3: Write minimal implementation**
 
@@ -796,8 +796,8 @@ Expected: FAIL with `ModuleNotFoundError: No module named 'quiver.normalize'`
 
 import logging
 
-from quiver.catalog import Engine, get_engine
-from quiver.models import Money, Result
+from searchmux.catalog import Engine, get_engine
+from searchmux.models import Money, Result
 
 logger = logging.getLogger(__name__)
 
@@ -885,7 +885,7 @@ Expected: 6 passed
 - [ ] **Step 5: Commit**
 
 ```bash
-git add quiver/normalize.py tests/test_normalize.py
+git add searchmux/normalize.py tests/test_normalize.py
 git commit -m "feat: normalize engine envelopes onto a common Result"
 ```
 
@@ -894,11 +894,11 @@ git commit -m "feat: normalize engine envelopes onto a common Result"
 ### Task 5: Cache
 
 **Files:**
-- Create: `quiver/cache.py`
+- Create: `searchmux/cache.py`
 - Test: `tests/test_cache.py`
 
 **Interfaces:**
-- Consumes: `SECRET_PARAM_KEYS`, `TTL_BY_CLASS`, `DEFAULT_TTL_CLASS` from `quiver.constants`.
+- Consumes: `SECRET_PARAM_KEYS`, `TTL_BY_CLASS`, `DEFAULT_TTL_CLASS` from `searchmux.constants`.
 - Produces: `request_key(engine_id: str, params: dict) -> str` (a module-level pure function, reused by Task 7 for cassette keys) and `Cache` class with `__init__(self, path: str, now: Callable[[], float] = time.time)`, `get(self, key: str, ttl: int) -> dict | None`, `set(self, key: str, body: dict) -> None`, `close(self) -> None`.
 
 - [ ] **Step 1: Write the failing test**
@@ -908,7 +908,7 @@ Covers Review Focus items 1, 4 and 5.
 ```python
 """Tests for cache keying and the SQLite cache."""
 
-from quiver.cache import Cache, request_key
+from searchmux.cache import Cache, request_key
 
 
 def test_key_ignores_param_order() -> None:
@@ -993,7 +993,7 @@ def test_cache_persists_across_instances(tmp_path) -> None:
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_cache.py -v`
-Expected: FAIL with `ModuleNotFoundError: No module named 'quiver.cache'`
+Expected: FAIL with `ModuleNotFoundError: No module named 'searchmux.cache'`
 
 - [ ] **Step 3: Write minimal implementation**
 
@@ -1007,7 +1007,7 @@ import sqlite3
 import time
 from collections.abc import Callable
 
-from quiver.constants import SECRET_PARAM_KEYS
+from searchmux.constants import SECRET_PARAM_KEYS
 
 logger = logging.getLogger(__name__)
 
@@ -1121,7 +1121,7 @@ Expected: 10 passed
 - [ ] **Step 5: Commit**
 
 ```bash
-git add quiver/cache.py tests/test_cache.py
+git add searchmux/cache.py tests/test_cache.py
 git commit -m "feat: sqlite cache with secret-free canonical request keys"
 ```
 
@@ -1130,11 +1130,11 @@ git commit -m "feat: sqlite cache with secret-free canonical request keys"
 ### Task 6: Budget guard
 
 **Files:**
-- Create: `quiver/budget.py`
+- Create: `searchmux/budget.py`
 - Test: `tests/test_budget.py`
 
 **Interfaces:**
-- Consumes: `BudgetExceeded` from `quiver.models`.
+- Consumes: `BudgetExceeded` from `searchmux.models`.
 - Produces: `Budget` class with `__init__(self, limit: int)`, `spend(self, engine_id: str) -> None` raising `BudgetExceeded`, properties `used: int` and `remaining: int`, and `report(self) -> dict`.
 
 - [ ] **Step 1: Write the failing test**
@@ -1148,8 +1148,8 @@ import threading
 
 import pytest
 
-from quiver.budget import Budget
-from quiver.models import BudgetExceeded
+from searchmux.budget import Budget
+from searchmux.models import BudgetExceeded
 
 
 def test_spend_increments_usage() -> None:
@@ -1217,7 +1217,7 @@ def test_concurrent_spends_never_exceed_the_limit() -> None:
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_budget.py -v`
-Expected: FAIL with `ModuleNotFoundError: No module named 'quiver.budget'`
+Expected: FAIL with `ModuleNotFoundError: No module named 'searchmux.budget'`
 
 - [ ] **Step 3: Write minimal implementation**
 
@@ -1228,7 +1228,7 @@ import logging
 import threading
 from collections import Counter
 
-from quiver.models import BudgetExceeded
+from searchmux.models import BudgetExceeded
 
 logger = logging.getLogger(__name__)
 
@@ -1304,7 +1304,7 @@ Expected: 6 passed
 - [ ] **Step 5: Commit**
 
 ```bash
-git add quiver/budget.py tests/test_budget.py
+git add searchmux/budget.py tests/test_budget.py
 git commit -m "feat: thread-safe credit budget guard"
 ```
 
@@ -1313,11 +1313,11 @@ git commit -m "feat: thread-safe credit budget guard"
 ### Task 7: Cassettes
 
 **Files:**
-- Create: `quiver/cassette.py`
+- Create: `searchmux/cassette.py`
 - Test: `tests/test_cassette.py`
 
 **Interfaces:**
-- Consumes: `request_key` from `quiver.cache`; `CassetteMiss` from `quiver.models`; `SECRET_PARAM_KEYS` from `quiver.constants`.
+- Consumes: `request_key` from `searchmux.cache`; `CassetteMiss` from `searchmux.models`; `SECRET_PARAM_KEYS` from `searchmux.constants`.
 - Produces: `Cassette` class with `__init__(self, path: str, mode: str)` where mode is `"record"` or `"replay"`, `play(self, engine_id: str, params: dict) -> dict` raising `CassetteMiss`, `capture(self, engine_id: str, params: dict, body: dict) -> None`, `save(self) -> None`, and `entry_count` property.
 
 - [ ] **Step 1: Write the failing test**
@@ -1331,8 +1331,8 @@ import json
 
 import pytest
 
-from quiver.cassette import Cassette
-from quiver.models import CassetteMiss
+from searchmux.cassette import Cassette
+from searchmux.models import CassetteMiss
 
 
 def test_capture_then_replay_returns_the_body(tmp_path) -> None:
@@ -1405,7 +1405,7 @@ def test_entry_count_reflects_captures(tmp_path) -> None:
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_cassette.py -v`
-Expected: FAIL with `ModuleNotFoundError: No module named 'quiver.cassette'`
+Expected: FAIL with `ModuleNotFoundError: No module named 'searchmux.cassette'`
 
 - [ ] **Step 3: Write minimal implementation**
 
@@ -1416,9 +1416,9 @@ import json
 import logging
 from pathlib import Path
 
-from quiver.cache import request_key
-from quiver.constants import SECRET_PARAM_KEYS
-from quiver.models import CassetteMiss
+from searchmux.cache import request_key
+from searchmux.constants import SECRET_PARAM_KEYS
+from searchmux.models import CassetteMiss
 
 logger = logging.getLogger(__name__)
 
@@ -1486,7 +1486,7 @@ class Cassette:
         if key not in self._entries:
             raise CassetteMiss(
                 f"no recording for {engine_id} with {self._safe(params)}; "
-                f"re-record with Quiver.record()"
+                f"re-record with SearchMux.record()"
             )
         return self._entries[key]
 
@@ -1541,36 +1541,36 @@ Expected: 7 passed
 - [ ] **Step 5: Commit**
 
 ```bash
-git add quiver/cassette.py tests/test_cassette.py
+git add searchmux/cassette.py tests/test_cassette.py
 git commit -m "feat: record/replay cassettes, secrets stripped on write"
 ```
 
 ---
 
-### Task 8: Quiver facade — first end-to-end path
+### Task 8: SearchMux facade — first end-to-end path
 
 **Files:**
-- Modify: `quiver/__init__.py`
-- Create: `quiver/client.py`
+- Modify: `searchmux/__init__.py`
+- Create: `searchmux/client.py`
 - Test: `tests/test_client.py`
 
 **Interfaces:**
 - Consumes: everything from Tasks 1-7.
-- Produces: `Quiver` class with `__init__(self, api_key: str | None = None, budget: int = DEFAULT_BUDGET, cache: str | None = DEFAULT_CACHE_PATH, transport: Transport | None = None, router: object | None = None)`, methods `search(self, engine: str, **params) -> list[Result]`, `find(self, intent: str, engine: str | None = None, **params) -> list[Result]`, `report(self) -> dict`, and context managers `record(self, path)` / `replay(self, path)`.
+- Produces: `SearchMux` class with `__init__(self, api_key: str | None = None, budget: int = DEFAULT_BUDGET, cache: str | None = DEFAULT_CACHE_PATH, transport: Transport | None = None, router: object | None = None)`, methods `search(self, engine: str, **params) -> list[Result]`, `find(self, intent: str, engine: str | None = None, **params) -> list[Result]`, `report(self) -> dict`, and context managers `record(self, path)` / `replay(self, path)`.
 
 This is the first task whose deliverable is demoable. After it, `q.find(..., engine=...)` works with cache, budget, and cassettes — the router arrives in Task 9.
 
 - [ ] **Step 1: Write the failing test**
 
 ```python
-"""Tests for the Quiver facade and the request pipeline."""
+"""Tests for the SearchMux facade and the request pipeline."""
 
 import httpx
 import pytest
 
-from quiver import Quiver
-from quiver.models import BudgetExceeded
-from quiver.transport import Transport
+from searchmux import SearchMux
+from searchmux.models import BudgetExceeded
+from searchmux.transport import Transport
 
 
 def _stub_transport(body: dict, calls: dict) -> Transport:
@@ -1587,7 +1587,7 @@ BODY = {"organic_results": [{"title": "t", "link": "u", "position": 1}]}
 
 def test_search_returns_normalized_results(tmp_path) -> None:
     calls: dict = {}
-    q = Quiver(
+    q = SearchMux(
         api_key="test-key",
         cache=str(tmp_path / "c.db"),
         transport=_stub_transport(BODY, calls),
@@ -1599,7 +1599,7 @@ def test_search_returns_normalized_results(tmp_path) -> None:
 
 def test_second_identical_search_hits_cache(tmp_path) -> None:
     calls: dict = {}
-    q = Quiver(
+    q = SearchMux(
         api_key="test-key",
         cache=str(tmp_path / "c.db"),
         transport=_stub_transport(BODY, calls),
@@ -1613,7 +1613,7 @@ def test_second_identical_search_hits_cache(tmp_path) -> None:
 
 def test_cache_hit_does_not_spend_budget(tmp_path) -> None:
     calls: dict = {}
-    q = Quiver(
+    q = SearchMux(
         api_key="test-key",
         budget=1,
         cache=str(tmp_path / "c.db"),
@@ -1626,7 +1626,7 @@ def test_cache_hit_does_not_spend_budget(tmp_path) -> None:
 
 def test_budget_exhaustion_raises_before_the_call(tmp_path) -> None:
     calls: dict = {}
-    q = Quiver(
+    q = SearchMux(
         api_key="test-key",
         budget=1,
         cache=None,
@@ -1640,7 +1640,7 @@ def test_budget_exhaustion_raises_before_the_call(tmp_path) -> None:
 
 def test_find_with_pinned_engine_needs_no_router(tmp_path) -> None:
     calls: dict = {}
-    q = Quiver(
+    q = SearchMux(
         api_key="test-key",
         cache=str(tmp_path / "c.db"),
         transport=_stub_transport(BODY, calls),
@@ -1652,7 +1652,7 @@ def test_find_with_pinned_engine_needs_no_router(tmp_path) -> None:
 def test_record_then_replay_costs_no_credits(tmp_path) -> None:
     calls: dict = {}
     path = str(tmp_path / "cass.json")
-    recorder = Quiver(
+    recorder = SearchMux(
         api_key="test-key",
         cache=None,
         transport=_stub_transport(BODY, calls),
@@ -1660,7 +1660,7 @@ def test_record_then_replay_costs_no_credits(tmp_path) -> None:
     with recorder.record(path):
         recorder.search(engine="google", q="x")
 
-    player = Quiver(api_key=None, cache=None, transport=None)
+    player = SearchMux(api_key=None, cache=None, transport=None)
     with player.replay(path):
         results = player.search(engine="google", q="x")
     assert results[0].title == "t"
@@ -1671,7 +1671,7 @@ def test_replay_works_without_an_api_key(tmp_path, monkeypatch) -> None:
     monkeypatch.delenv("SERPAPI_API_KEY", raising=False)
     calls: dict = {}
     path = str(tmp_path / "cass.json")
-    recorder = Quiver(
+    recorder = SearchMux(
         api_key="test-key",
         cache=None,
         transport=_stub_transport(BODY, calls),
@@ -1679,7 +1679,7 @@ def test_replay_works_without_an_api_key(tmp_path, monkeypatch) -> None:
     with recorder.record(path):
         recorder.search(engine="google", q="x")
 
-    player = Quiver(cache=None)
+    player = SearchMux(cache=None)
     with player.replay(path):
         assert player.search(engine="google", q="x")
 ```
@@ -1687,38 +1687,38 @@ def test_replay_works_without_an_api_key(tmp_path, monkeypatch) -> None:
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_client.py -v`
-Expected: FAIL with `ImportError: cannot import name 'Quiver'`
+Expected: FAIL with `ImportError: cannot import name 'SearchMux'`
 
 - [ ] **Step 3: Write minimal implementation**
 
-`quiver/client.py`:
+`searchmux/client.py`:
 
 ```python
-"""The Quiver facade: one pipeline over cache, budget, and transport."""
+"""The SearchMux facade: one pipeline over cache, budget, and transport."""
 
 import logging
 import os
 from collections.abc import Iterator
 from contextlib import contextmanager
 
-from quiver.budget import Budget
-from quiver.cache import Cache, request_key
-from quiver.cassette import MODE_RECORD, MODE_REPLAY, Cassette
-from quiver.catalog import get_engine
-from quiver.constants import (
+from searchmux.budget import Budget
+from searchmux.cache import Cache, request_key
+from searchmux.cassette import MODE_RECORD, MODE_REPLAY, Cassette
+from searchmux.catalog import get_engine
+from searchmux.constants import (
     DEFAULT_BUDGET,
     DEFAULT_CACHE_PATH,
     ENV_API_KEY,
     TTL_BY_CLASS,
 )
-from quiver.models import Result
-from quiver.normalize import normalize
-from quiver.transport import Transport
+from searchmux.models import Result
+from searchmux.normalize import normalize
+from searchmux.transport import Transport
 
 logger = logging.getLogger(__name__)
 
 
-class Quiver:
+class SearchMux:
     """Routes, caches, and meters SerpApi searches."""
 
     def __init__(
@@ -1798,12 +1798,12 @@ class Quiver:
             # The intent is the query unless the caller overrides q.
             return self.search(engine=engine, **{"q": intent, **params})
 
-        from quiver.models import RoutingError
+        from searchmux.models import RoutingError
 
         if self._router is None:
             raise RoutingError(
                 "no engine pinned and no router configured; pass "
-                "engine= or construct Quiver with a router"
+                "engine= or construct SearchMux with a router"
             )
         engine_id, routed = self._router.route(intent)
         return self.search(engine=engine_id, **{**routed, **params})
@@ -1866,7 +1866,7 @@ class Quiver:
         return {**self._budget.report(), "cache_hits": self._cache_hits}
 ```
 
-Add a `mode` property to `Cassette` in `quiver/cassette.py`, since the facade reads it:
+Add a `mode` property to `Cassette` in `searchmux/cassette.py`, since the facade reads it:
 
 ```python
     @property
@@ -1875,10 +1875,10 @@ Add a `mode` property to `Cassette` in `quiver/cassette.py`, since the facade re
         return self._mode
 ```
 
-Append to `quiver/__init__.py`'s imports and `__all__`:
+Append to `searchmux/__init__.py`'s imports and `__all__`:
 
 ```python
-from quiver.client import Quiver
+from searchmux.client import SearchMux
 ```
 
 - [ ] **Step 4: Run test to verify it passes**
@@ -1894,8 +1894,8 @@ Expected: all tests pass. This is the invariant from the spec.
 - [ ] **Step 6: Commit**
 
 ```bash
-git add quiver/client.py quiver/cassette.py quiver/__init__.py tests/test_client.py
-git commit -m "feat: Quiver facade wiring cache, budget, cassettes"
+git add searchmux/client.py searchmux/cassette.py searchmux/__init__.py tests/test_client.py
+git commit -m "feat: SearchMux facade wiring cache, budget, cassettes"
 ```
 
 ---
@@ -1903,12 +1903,12 @@ git commit -m "feat: Quiver facade wiring cache, budget, cassettes"
 ### Task 9: Intent router
 
 **Files:**
-- Create: `quiver/router.py`
-- Modify: `quiver/client.py` (default router construction)
+- Create: `searchmux/router.py`
+- Modify: `searchmux/client.py` (default router construction)
 - Test: `tests/test_router.py`
 
 **Interfaces:**
-- Consumes: `load_catalog` from `quiver.catalog`; `RoutingError` from `quiver.models`; `DEFAULT_ROUTER_TOP_K`, `ENV_ANTHROPIC_KEY` from `quiver.constants`.
+- Consumes: `load_catalog` from `searchmux.catalog`; `RoutingError` from `searchmux.models`; `DEFAULT_ROUTER_TOP_K`, `ENV_ANTHROPIC_KEY` from `searchmux.constants`.
 - Produces: `LLMClient` protocol with `complete(self, prompt: str, schema: dict) -> dict`; `Router` class with `__init__(self, llm: LLMClient | None = None, top_k: int = DEFAULT_ROUTER_TOP_K)`, `retrieve(self, intent: str) -> list[str]` returning candidate engine ids, and `route(self, intent: str) -> tuple[str, dict]`.
 
 Before writing this task's code, load the `claude-api` skill — the default `LLMClient` targets Anthropic and the model id must be current, not remembered.
@@ -1920,8 +1920,8 @@ Before writing this task's code, load the `claude-api` skill — the default `LL
 
 import pytest
 
-from quiver.models import RoutingError
-from quiver.router import Router
+from searchmux.models import RoutingError
+from searchmux.router import Router
 
 
 class FakeLLM:
@@ -1993,7 +1993,7 @@ def test_unknown_param_is_dropped_not_fatal() -> None:
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_router.py -v`
-Expected: FAIL with `ModuleNotFoundError: No module named 'quiver.router'`
+Expected: FAIL with `ModuleNotFoundError: No module named 'searchmux.router'`
 
 - [ ] **Step 3: Write minimal implementation**
 
@@ -2007,9 +2007,9 @@ from typing import Protocol
 
 from rank_bm25 import BM25Okapi
 
-from quiver.catalog import Engine, load_catalog
-from quiver.constants import DEFAULT_ROUTER_TOP_K, ENV_ANTHROPIC_KEY
-from quiver.models import RoutingError
+from searchmux.catalog import Engine, load_catalog
+from searchmux.constants import DEFAULT_ROUTER_TOP_K, ENV_ANTHROPIC_KEY
+from searchmux.models import RoutingError
 
 logger = logging.getLogger(__name__)
 
@@ -2206,14 +2206,14 @@ def _default_llm() -> LLMClient:
             f"routing needs {ENV_ANTHROPIC_KEY}; pass engine= to skip "
             f"routing entirely"
         )
-    from quiver.llm import AnthropicClient
+    from searchmux.llm import AnthropicClient
 
     return AnthropicClient()
 ```
 
-Also create `quiver/llm.py` holding `AnthropicClient`, implementing `complete` via the Anthropic SDK's tool-use for structured output. **Load the `claude-api` skill before writing it** so the model id is current.
+Also create `searchmux/llm.py` holding `AnthropicClient`, implementing `complete` via the Anthropic SDK's tool-use for structured output. **Load the `claude-api` skill before writing it** so the model id is current.
 
-Then in `quiver/client.py`, replace the `find` router guard so a default router is built lazily when `ANTHROPIC_API_KEY` is present.
+Then in `searchmux/client.py`, replace the `find` router guard so a default router is built lazily when `ANTHROPIC_API_KEY` is present.
 
 - [ ] **Step 4: Run test to verify it passes**
 
@@ -2223,7 +2223,7 @@ Expected: 8 passed
 - [ ] **Step 5: Commit**
 
 ```bash
-git add quiver/router.py quiver/llm.py quiver/client.py tests/test_router.py
+git add searchmux/router.py searchmux/llm.py searchmux/client.py tests/test_router.py
 git commit -m "feat: two-stage intent router, BM25 then schema-bound LLM"
 ```
 
@@ -2236,7 +2236,7 @@ git commit -m "feat: two-stage intent router, BM25 then schema-bound LLM"
 - Test: `tests/test_eval.py`
 
 **Interfaces:**
-- Consumes: `Router` from `quiver.router`.
+- Consumes: `Router` from `searchmux.router`.
 - Produces: `load_cases(path: str) -> list[dict]`, `score_arm(name: str, predict: Callable[[str], str], cases: list[dict]) -> dict` returning `{"arm", "n", "correct", "accuracy"}`, and a `__main__` that prints the three-arm table.
 
 This task produces the number the demo video is built around. Do not cut it.
@@ -2267,7 +2267,7 @@ def test_score_arm_computes_accuracy() -> None:
 
 
 def test_bm25_top1_beats_chance_on_the_eval_set() -> None:
-    from quiver.router import Router
+    from searchmux.router import Router
 
     router = Router(llm=_NullLLM())
     cases = load_cases("evals/routing.jsonl")
@@ -2390,21 +2390,21 @@ git commit -m "feat: three-arm routing eval with 50 labelled intents"
 ### Task 11: Adapters
 
 **Files:**
-- Create: `quiver/adapters/__init__.py`, `quiver/adapters/tool.py`, `quiver/adapters/mcp_server.py`
-- Modify: `quiver/client.py` (add `as_tool`)
+- Create: `searchmux/adapters/__init__.py`, `searchmux/adapters/tool.py`, `searchmux/adapters/mcp_server.py`
+- Modify: `searchmux/client.py` (add `as_tool`)
 - Test: `tests/test_adapters.py`
 
 **Interfaces:**
-- Consumes: `Quiver` from `quiver.client`.
-- Produces: `tool_schema(name: str = "search") -> dict` emitting an OpenAI/Anthropic-compatible function schema, `Quiver.as_tool(self) -> dict`, and an MCP server entry point `main() -> None`.
+- Consumes: `SearchMux` from `searchmux.client`.
+- Produces: `tool_schema(name: str = "search") -> dict` emitting an OpenAI/Anthropic-compatible function schema, `SearchMux.as_tool(self) -> dict`, and an MCP server entry point `main() -> None`.
 
 - [ ] **Step 1: Write the failing test**
 
 ```python
 """Tests for framework tool emission."""
 
-from quiver import Quiver
-from quiver.adapters.tool import tool_schema
+from searchmux import SearchMux
+from searchmux.adapters.tool import tool_schema
 
 
 def test_schema_has_a_single_intent_parameter() -> None:
@@ -2420,7 +2420,7 @@ def test_schema_description_mentions_engine_breadth() -> None:
 
 
 def test_as_tool_returns_the_schema(tmp_path) -> None:
-    q = Quiver(api_key="k", cache=str(tmp_path / "c.db"))
+    q = SearchMux(api_key="k", cache=str(tmp_path / "c.db"))
     assert q.as_tool()["name"] == "search"
 
 
@@ -2433,7 +2433,7 @@ def test_schema_is_json_serializable() -> None:
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_adapters.py -v`
-Expected: FAIL with `ModuleNotFoundError: No module named 'quiver.adapters'`
+Expected: FAIL with `ModuleNotFoundError: No module named 'searchmux.adapters'`
 
 - [ ] **Step 3: Write minimal implementation**
 
@@ -2450,7 +2450,7 @@ TOOL_DESCRIPTION = (
 
 
 def tool_schema(name: str = "search") -> dict:
-    """Return a function-calling schema for Quiver.find.
+    """Return a function-calling schema for SearchMux.find.
 
     Args:
         name: Tool name exposed to the model.
@@ -2476,7 +2476,7 @@ def tool_schema(name: str = "search") -> dict:
     }
 ```
 
-`quiver/adapters/mcp_server.py` exposes one `find` tool over stdio, delegating to a module-level `Quiver`, reading the key from `os.getenv`. Add `as_tool` to `Quiver` returning `tool_schema()`.
+`searchmux/adapters/mcp_server.py` exposes one `find` tool over stdio, delegating to a module-level `SearchMux`, reading the key from `os.getenv`. Add `as_tool` to `SearchMux` returning `tool_schema()`.
 
 - [ ] **Step 4: Run test to verify it passes**
 
@@ -2486,7 +2486,7 @@ Expected: 4 passed
 - [ ] **Step 5: Commit**
 
 ```bash
-git add quiver/adapters tests/test_adapters.py quiver/client.py
+git add searchmux/adapters tests/test_adapters.py searchmux/client.py
 git commit -m "feat: tool schema emission and MCP server adapter"
 ```
 

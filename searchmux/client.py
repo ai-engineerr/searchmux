@@ -1,4 +1,4 @@
-"""The Quiver facade: one pipeline over cache, budget, and transport.
+"""The SearchMux facade: one pipeline over cache, budget, and transport.
 
 The pipeline is intent -> router -> cache -> budget -> transport ->
 normalizer -> cache write. Routing is optional; pinning an engine skips
@@ -11,25 +11,25 @@ import os
 from collections.abc import Iterator
 from contextlib import contextmanager
 
-from quiver.adapters.tool import tool_schema
-from quiver.budget import Budget
-from quiver.cache import Cache, request_key
-from quiver.cassette import MODE_RECORD, MODE_REPLAY, Cassette
-from quiver.catalog import get_engine
-from quiver.constants import (
+from searchmux.adapters.tool import tool_schema
+from searchmux.budget import Budget
+from searchmux.cache import Cache, request_key
+from searchmux.cassette import MODE_RECORD, MODE_REPLAY, Cassette
+from searchmux.catalog import get_engine
+from searchmux.constants import (
     DEFAULT_BUDGET,
     DEFAULT_CACHE_PATH,
     ENV_API_KEY,
     TTL_BY_CLASS,
 )
-from quiver.models import Result, RoutingError
-from quiver.normalize import normalize
-from quiver.transport import Transport
+from searchmux.models import Result, RoutingError
+from searchmux.normalize import normalize
+from searchmux.transport import Transport
 
 logger = logging.getLogger(__name__)
 
 
-class Quiver:
+class SearchMux:
     """Routes, caches, and meters SerpApi searches."""
 
     def __init__(
@@ -112,7 +112,7 @@ class Quiver:
         if self._router is None:
             raise RoutingError(
                 "no engine pinned and no router configured; pass "
-                "engine= or construct Quiver with a router"
+                "engine= or construct SearchMux with a router"
             )
         engine_id, routed = self._router.route(intent)
         return self.search(engine=engine_id, **{**routed, **params})

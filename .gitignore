@@ -4,10 +4,10 @@ __pycache__/
 venv/
 .env
 *.db
-.quiver.db
+.searchmux.db
 .pytest_cache/
 *.egg-info/
 dist/
 build/
-examples/.quiver-demo.db
+examples/.searchmux-demo.db
 examples/recorded.json

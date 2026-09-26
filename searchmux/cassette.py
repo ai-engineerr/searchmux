@@ -4,9 +4,9 @@ import json
 import logging
 from pathlib import Path
 
-from quiver.cache import request_key
-from quiver.constants import SECRET_PARAM_KEYS
-from quiver.models import CassetteMiss
+from searchmux.cache import request_key
+from searchmux.constants import SECRET_PARAM_KEYS
+from searchmux.models import CassetteMiss
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +75,7 @@ class Cassette:
         if key not in self._entries:
             raise CassetteMiss(
                 f"no recording for {engine_id} with {self._safe(params)}; "
-                f"re-record with Quiver.record()"
+                f"re-record with SearchMux.record()"
             )
         return self._entries[key]
 

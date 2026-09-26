@@ -3,7 +3,7 @@
 The question needs four different kinds of live data: current prices,
 recent news, video reviews, and search-interest trend. Each lives
 behind a different SerpApi engine with its own parameter vocabulary and
-its own response envelope. Quiver gives them one shape and one budget.
+its own response envelope. SearchMux gives them one shape and one budget.
 
 Run it:
 
@@ -19,13 +19,13 @@ import logging
 import os
 from pathlib import Path
 
-from quiver import Quiver
-from quiver.constants import ENV_API_KEY
+from searchmux import SearchMux
+from searchmux.constants import ENV_API_KEY
 
 HERE = Path(__file__).parent
 DEMO_CASSETTE = str(HERE / "demo_cassette.json")
 RECORDED_CASSETTE = str(HERE / "recorded.json")
-DEMO_CACHE = str(HERE / ".quiver-demo.db")
+DEMO_CACHE = str(HERE / ".searchmux-demo.db")
 
 # Each question is (label, engine, params). Engines are pinned, so this
 # demo needs no LLM and no ANTHROPIC_API_KEY.
@@ -37,11 +37,11 @@ QUESTIONS = [
 ]
 
 
-def gather(q: Quiver) -> dict:
+def gather(q: SearchMux) -> dict:
     """Run every question and return results keyed by label.
 
     Args:
-        q: A configured Quiver client.
+        q: A configured SearchMux client.
 
     Returns:
         Mapping of label to the list of normalized results.
@@ -93,7 +93,7 @@ def main() -> None:
     # budget=8 is a hard ceiling: four questions asked twice. The
     # second pass comes from cache, so it spends nothing - that gap
     # between 8 allowed and 4 spent is the whole point.
-    q = Quiver(budget=8, cache=DEMO_CACHE)
+    q = SearchMux(budget=8, cache=DEMO_CACHE)
 
     if live:
         print(f"live mode: recording to {RECORDED_CASSETTE}\n")

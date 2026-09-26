@@ -6,8 +6,8 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 
-from quiver.constants import DEFAULT_TTL_CLASS
-from quiver.models import CatalogError
+from searchmux.constants import DEFAULT_TTL_CLASS
+from searchmux.models import CatalogError
 
 logger = logging.getLogger(__name__)
 

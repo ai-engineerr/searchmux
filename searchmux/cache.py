@@ -7,7 +7,7 @@ import sqlite3
 import time
 from collections.abc import Callable
 
-from quiver.constants import SECRET_PARAM_KEYS
+from searchmux.constants import SECRET_PARAM_KEYS
 
 logger = logging.getLogger(__name__)
 

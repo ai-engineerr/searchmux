@@ -1,11 +1,11 @@
-"""Tests for the Quiver facade and the request pipeline."""
+"""Tests for the SearchMux facade and the request pipeline."""
 
 import httpx
 import pytest
 
-from quiver import Quiver
-from quiver.models import BudgetExceeded, RoutingError
-from quiver.transport import Transport
+from searchmux import SearchMux
+from searchmux.models import BudgetExceeded, RoutingError
+from searchmux.transport import Transport
 
 BODY = {"organic_results": [{"title": "t", "link": "u", "position": 1}]}
 
@@ -23,7 +23,7 @@ def _stub_transport(body: dict, calls: dict) -> Transport:
 
 def test_search_returns_normalized_results(tmp_path) -> None:
     calls: dict = {}
-    q = Quiver(
+    q = SearchMux(
         api_key="test-key",
         cache=str(tmp_path / "c.db"),
         transport=_stub_transport(BODY, calls),
@@ -35,7 +35,7 @@ def test_search_returns_normalized_results(tmp_path) -> None:
 
 def test_second_identical_search_hits_cache(tmp_path) -> None:
     calls: dict = {}
-    q = Quiver(
+    q = SearchMux(
         api_key="test-key",
         cache=str(tmp_path / "c.db"),
         transport=_stub_transport(BODY, calls),
@@ -49,7 +49,7 @@ def test_second_identical_search_hits_cache(tmp_path) -> None:
 
 def test_cache_hit_does_not_spend_budget(tmp_path) -> None:
     calls: dict = {}
-    q = Quiver(
+    q = SearchMux(
         api_key="test-key",
         budget=1,
         cache=str(tmp_path / "c.db"),
@@ -62,7 +62,7 @@ def test_cache_hit_does_not_spend_budget(tmp_path) -> None:
 
 def test_budget_exhaustion_raises_before_the_call() -> None:
     calls: dict = {}
-    q = Quiver(
+    q = SearchMux(
         api_key="test-key",
         budget=1,
         cache=None,
@@ -76,7 +76,7 @@ def test_budget_exhaustion_raises_before_the_call() -> None:
 
 def test_find_with_pinned_engine_needs_no_router(tmp_path) -> None:
     calls: dict = {}
-    q = Quiver(
+    q = SearchMux(
         api_key="test-key",
         cache=str(tmp_path / "c.db"),
         transport=_stub_transport(BODY, calls),
@@ -93,7 +93,7 @@ def test_pinned_find_uses_the_intent_as_the_query(tmp_path) -> None:
         return httpx.Response(200, json=BODY)
 
     client = httpx.Client(transport=httpx.MockTransport(handler))
-    q = Quiver(
+    q = SearchMux(
         api_key="test-key",
         cache=None,
         transport=Transport(api_key="k", client=client),
@@ -110,7 +110,7 @@ def test_explicit_params_override_the_intent(tmp_path) -> None:
         return httpx.Response(200, json=BODY)
 
     client = httpx.Client(transport=httpx.MockTransport(handler))
-    q = Quiver(
+    q = SearchMux(
         api_key="test-key",
         cache=None,
         transport=Transport(api_key="k", client=client),
@@ -120,7 +120,7 @@ def test_explicit_params_override_the_intent(tmp_path) -> None:
 
 
 def test_find_without_engine_or_router_raises(tmp_path) -> None:
-    q = Quiver(api_key="test-key", cache=None)
+    q = SearchMux(api_key="test-key", cache=None)
     with pytest.raises(RoutingError, match="engine"):
         q.find("something")
 
@@ -132,7 +132,7 @@ def test_find_uses_an_injected_router(tmp_path) -> None:
         def route(self, intent: str) -> tuple[str, dict]:
             return "google", {"q": "routed"}
 
-    q = Quiver(
+    q = SearchMux(
         api_key="test-key",
         cache=None,
         transport=_stub_transport(BODY, calls),
@@ -144,7 +144,7 @@ def test_find_uses_an_injected_router(tmp_path) -> None:
 def test_record_then_replay_costs_no_credits(tmp_path) -> None:
     calls: dict = {}
     path = str(tmp_path / "cass.json")
-    recorder = Quiver(
+    recorder = SearchMux(
         api_key="test-key",
         cache=None,
         transport=_stub_transport(BODY, calls),
@@ -152,7 +152,7 @@ def test_record_then_replay_costs_no_credits(tmp_path) -> None:
     with recorder.record(path):
         recorder.search(engine="google", q="x")
 
-    player = Quiver(api_key=None, cache=None, transport=None)
+    player = SearchMux(api_key=None, cache=None, transport=None)
     with player.replay(path):
         results = player.search(engine="google", q="x")
     assert results[0].title == "t"
@@ -163,7 +163,7 @@ def test_replay_works_without_an_api_key(tmp_path, monkeypatch) -> None:
     monkeypatch.delenv("SERPAPI_API_KEY", raising=False)
     calls: dict = {}
     path = str(tmp_path / "cass.json")
-    recorder = Quiver(
+    recorder = SearchMux(
         api_key="test-key",
         cache=None,
         transport=_stub_transport(BODY, calls),
@@ -171,7 +171,7 @@ def test_replay_works_without_an_api_key(tmp_path, monkeypatch) -> None:
     with recorder.record(path):
         recorder.search(engine="google", q="x")
 
-    player = Quiver(cache=None)
+    player = SearchMux(cache=None)
     with player.replay(path):
         assert player.search(engine="google", q="x")
 
@@ -181,6 +181,6 @@ def test_missing_key_raises_only_when_a_call_is_needed(
 ) -> None:
     """Constructing without a key is fine; fetching without one is not."""
     monkeypatch.delenv("SERPAPI_API_KEY", raising=False)
-    q = Quiver(cache=None)
+    q = SearchMux(cache=None)
     with pytest.raises(ValueError, match="SERPAPI_API_KEY"):
         q.search(engine="google", q="x")

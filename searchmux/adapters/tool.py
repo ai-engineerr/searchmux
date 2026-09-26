@@ -10,7 +10,7 @@ TOOL_DESCRIPTION = (
 
 
 def tool_schema(name: str = "search") -> dict:
-    """Return a function-calling schema for Quiver.find.
+    """Return a function-calling schema for SearchMux.find.
 
     Args:
         name: Tool name exposed to the model.

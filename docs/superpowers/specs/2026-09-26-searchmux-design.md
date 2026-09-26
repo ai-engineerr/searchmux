@@ -1,4 +1,4 @@
-# Quiver — Design Spec
+# SearchMux — Design Spec
 
 **Date:** 2026-09-26
 **Target:** SerpApi India Hackathon 2026, submission deadline 2026-10-05 23:59 IST
@@ -17,16 +17,16 @@ SerpApi exposes 100+ search engines. Every engine has its own parameter vocabula
 
 **SerpApi-backed agents are effectively untestable.** A 30-test suite at 3 searches per test costs 90 credits per CI run. No record/replay facility exists, so the rational response is to not write tests. A survey of the 120 projects in the BuiltWithSerpApi gallery found no test suites exercising search paths.
 
-## 2. What Quiver is
+## 2. What SearchMux is
 
 A Python library interposed between agent code and SerpApi's HTTP API: a request pipeline with pluggable middleware, an intent router in front, and framework adapters behind.
 
-Not an application. No UI, no hosted service, no database beyond a local SQLite cache file. Installed with `pip install quiver-search`.
+Not an application. No UI, no hosted service, no database beyond a local SQLite cache file. Installed with `pip install searchmux`.
 
 ### Non-goals
 
 - Not a SerpApi client replacement. `serpapi-python` stays underneath as transport.
-- Not an agent framework. Quiver supplies tools; orchestration belongs elsewhere.
+- Not an agent framework. SearchMux supplies tools; orchestration belongs elsewhere.
 - No proxying, rate-limit evasion, or ToS circumvention. Caching reduces duplicate billable requests, which is a supported usage pattern, not a bypass.
 
 ## 3. Architecture
@@ -129,9 +129,9 @@ v1 ships plain Python + MCP + a LangChain-verified `as_tool()`. CrewAI and Llama
 ## 5. Public API
 
 ```python
-from quiver import Quiver
+from searchmux import SearchMux
 
-q = Quiver(api_key=..., budget=50, cache="./.quiver.db")
+q = SearchMux(api_key=..., budget=50, cache="./.searchmux.db")
 
 results = q.find("current Pixel 10 prices in India")     # routed
 results = q.find("Pixel 10", engine="google_shopping")   # pinned, no LLM
@@ -173,7 +173,7 @@ One shape across engines; `raw` always attached so no field is lost to normaliza
 | Router cannot resolve | `RoutingError` after one repair attempt |
 | Params fail schema validation | `ValidationError`, engine + offending field named |
 | Cassette miss in replay | `CassetteMiss`, never network |
-| SerpApi 4xx | `QuiverAPIError`, not retried |
+| SerpApi 4xx | `SearchMuxAPIError`, not retried |
 | SerpApi 5xx / timeout | 3 retries, exponential backoff, then raise |
 | Unknown response envelope | Return `Result` with `raw` only, warn once |
 
@@ -185,7 +185,7 @@ A labelled set of intents mapped to expected engines, `evals/routing.jsonl`, ~50
 
 1. **Baseline** — generic single-tool prompt, all engine ids listed, no schemas (reproduces `serpapi-mcp` behaviour)
 2. **BM25 top-1** — retrieval only, no LLM
-3. **Quiver** — BM25 top-5 + schema-constrained LLM synthesis
+3. **SearchMux** — BM25 top-5 + schema-constrained LLM synthesis
 
 Reported as engine-selection accuracy plus invalid-parameter rate. Runs offline from cassettes, so a judge can reproduce it with no API key.
 
@@ -201,8 +201,8 @@ This is deliberate: the submission needs a defensible number, not a feature tour
 ## 10. Layout
 
 ```
-quiver/
-  __init__.py       Quiver facade
+searchmux/
+  __init__.py       SearchMux facade
   catalog.py        load + query the generated catalog
   catalog.json      generated, committed
   router.py         BM25 retrieval + LLM param synthesis

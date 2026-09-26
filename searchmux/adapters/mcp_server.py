@@ -1,4 +1,4 @@
-"""MCP stdio server exposing Quiver's search as a single tool.
+"""MCP stdio server exposing SearchMux's search as a single tool.
 
 Uses the official `mcp` Python SDK (`mcp.server.mcpserver.MCPServer`,
 the successor to `FastMCP` as of mcp>=2). Requires the optional `mcp`
@@ -11,19 +11,19 @@ from dataclasses import asdict
 
 from mcp.server.mcpserver import MCPServer
 
-from quiver.client import Quiver
-from quiver.constants import ENV_ANTHROPIC_KEY, ENV_API_KEY
+from searchmux.client import SearchMux
+from searchmux.constants import ENV_ANTHROPIC_KEY, ENV_API_KEY
 
 logger = logging.getLogger(__name__)
 
-SERVER_NAME = "quiver"
+SERVER_NAME = "searchmux"
 
 server = MCPServer(SERVER_NAME)
-_quiver: Quiver | None = None
+_searchmux: SearchMux | None = None
 
 
-def _client() -> Quiver:
-    """Return the module-level Quiver, building it on first use.
+def _client() -> SearchMux:
+    """Return the module-level SearchMux, building it on first use.
 
     A router is attached when ANTHROPIC_API_KEY is present. Without one
     the `find` tool cannot resolve an engine from plain language, so it
@@ -31,15 +31,15 @@ def _client() -> Quiver:
     failing obscurely.
 
     Returns:
-        A Quiver client backed by the SERPAPI_API_KEY environment
+        A SearchMux client backed by the SERPAPI_API_KEY environment
         variable, with a router when routing is configured.
     """
-    global _quiver
-    if _quiver is None:
-        _quiver = Quiver(
+    global _searchmux
+    if _searchmux is None:
+        _searchmux = SearchMux(
             api_key=os.getenv(ENV_API_KEY), router=_router()
         )
-    return _quiver
+    return _searchmux
 
 
 def _router() -> object | None:
@@ -54,7 +54,7 @@ def _router() -> object | None:
             ENV_ANTHROPIC_KEY,
         )
         return None
-    from quiver.router import Router
+    from searchmux.router import Router
 
     return Router()
 
@@ -74,9 +74,9 @@ def find(intent: str) -> list[dict]:
 
 
 def main() -> None:
-    """Run the Quiver MCP server over stdio.
+    """Run the SearchMux MCP server over stdio.
 
-    This is the `quiver-mcp` console script entry point.
+    This is the `searchmux-mcp` console script entry point.
     """
     logger.info("starting %s MCP server on stdio", SERVER_NAME)
     server.run(transport="stdio")

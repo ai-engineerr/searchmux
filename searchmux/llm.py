@@ -1,7 +1,7 @@
 """Structured-output LLM client used by the intent router.
 
 Only the router needs this. Pinning an engine with
-``q.find(..., engine=...)`` skips it entirely, so Quiver's cache,
+``q.find(..., engine=...)`` skips it entirely, so SearchMux's cache,
 budget guard, and cassettes never require an LLM or an LLM key.
 """
 
@@ -9,12 +9,12 @@ import json
 import logging
 from typing import Any
 
-from quiver.constants import (
+from searchmux.constants import (
     ROUTER_EFFORT,
     ROUTER_MAX_TOKENS,
     ROUTER_MODEL,
 )
-from quiver.models import QuiverError
+from searchmux.models import SearchMuxError
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +58,7 @@ class AnthropicClient:
             The parsed response object.
 
         Raises:
-            QuiverError: If the response carries no text block, or its
+            SearchMuxError: If the response carries no text block, or its
                 text is not valid JSON.
         """
         response = self._client.messages.create(
@@ -78,7 +78,7 @@ class AnthropicClient:
         try:
             return json.loads(text)
         except json.JSONDecodeError as exc:
-            raise QuiverError(
+            raise SearchMuxError(
                 f"router model did not return valid JSON: {text[:200]!r}"
             ) from exc
 
@@ -102,9 +102,9 @@ def _first_text(response: Any) -> str:
     the block type is checked rather than assuming index zero.
 
     Raises:
-        QuiverError: If no text block is present.
+        SearchMuxError: If no text block is present.
     """
     for block in response.content:
         if getattr(block, "type", None) == "text":
             return block.text
-    raise QuiverError("router model returned no text block")
+    raise SearchMuxError("router model returned no text block")

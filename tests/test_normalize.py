@@ -1,6 +1,6 @@
 """Tests for envelope normalization across engines."""
 
-from quiver.normalize import normalize
+from searchmux.normalize import normalize
 
 
 def test_organic_results_map_to_common_shape() -> None:

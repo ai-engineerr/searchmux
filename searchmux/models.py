@@ -1,29 +1,29 @@
-"""Value objects and the exception hierarchy for Quiver."""
+"""Value objects and the exception hierarchy for SearchMux."""
 
 from dataclasses import dataclass, field
 
 
-class QuiverError(Exception):
-    """Base class for every error Quiver raises."""
+class SearchMuxError(Exception):
+    """Base class for every error SearchMux raises."""
 
 
-class BudgetExceeded(QuiverError):
+class BudgetExceeded(SearchMuxError):
     """Raised before a request that would exceed the credit budget."""
 
 
-class RoutingError(QuiverError):
+class RoutingError(SearchMuxError):
     """Raised when intent cannot be resolved to an engine."""
 
 
-class CassetteMiss(QuiverError):
+class CassetteMiss(SearchMuxError):
     """Raised on a replay miss. Never falls through to network."""
 
 
-class QuiverAPIError(QuiverError):
+class SearchMuxAPIError(SearchMuxError):
     """Raised on a non-retryable SerpApi response."""
 
 
-class CatalogError(QuiverError):
+class CatalogError(SearchMuxError):
     """Raised when an engine is absent from the catalog."""
 
 

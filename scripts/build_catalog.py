@@ -1,4 +1,4 @@
-"""Regenerate quiver/catalog.json param tables from SerpApi's docs.
+"""Regenerate searchmux/catalog.json param tables from SerpApi's docs.
 
 Fetches each engine's documentation page and extracts its parameter
 table, then merges the result onto the hand-written fields already in
@@ -19,7 +19,7 @@ import httpx
 logger = logging.getLogger(__name__)
 
 _CATALOG_PATH = (
-    Path(__file__).resolve().parent.parent / "quiver" / "catalog.json"
+    Path(__file__).resolve().parent.parent / "searchmux" / "catalog.json"
 )
 _DOC_URL_TEMPLATE = "https://serpapi.com/{engine_id}-api"
 # ponytail: naive scrape, not a real HTML parser. Upgrade to

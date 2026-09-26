@@ -5,13 +5,13 @@ import time
 
 import httpx
 
-from quiver.constants import (
+from searchmux.constants import (
     HTTP_BACKOFF_BASE,
     HTTP_MAX_RETRIES,
     HTTP_TIMEOUT,
     SERPAPI_BASE_URL,
 )
-from quiver.models import QuiverAPIError
+from searchmux.models import SearchMuxAPIError
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +49,7 @@ class Transport:
             The decoded JSON response body.
 
         Raises:
-            QuiverAPIError: On a 4xx, or after retries are exhausted.
+            SearchMuxAPIError: On a 4xx, or after retries are exhausted.
         """
         query = {**params, "engine": engine_id, "api_key": self._api_key}
         last_error: Exception | None = None
@@ -66,11 +66,11 @@ class Transport:
                 if response.status_code < 400:
                     return response.json()
                 if response.status_code < 500:
-                    raise QuiverAPIError(
+                    raise SearchMuxAPIError(
                         f"{engine_id} returned {response.status_code}: "
                         f"{self._error_text(response)}"
                     )
-                last_error = QuiverAPIError(
+                last_error = SearchMuxAPIError(
                     f"{engine_id} returned {response.status_code}"
                 )
                 logger.warning(
@@ -80,7 +80,7 @@ class Transport:
             if attempt < HTTP_MAX_RETRIES - 1:
                 time.sleep(HTTP_BACKOFF_BASE * (2**attempt))
 
-        raise QuiverAPIError(
+        raise SearchMuxAPIError(
             f"{engine_id} failed after {HTTP_MAX_RETRIES} attempts"
         ) from last_error
 

@@ -5,8 +5,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from quiver.llm import AnthropicClient
-from quiver.models import QuiverError
+from searchmux.llm import AnthropicClient
+from searchmux.models import SearchMuxError
 
 SCHEMA = {
     "type": "object",
@@ -72,9 +72,9 @@ def test_prompt_is_sent_as_the_user_message() -> None:
     ]
 
 
-def test_unparseable_response_raises_quiver_error() -> None:
+def test_unparseable_response_raises_searchmux_error() -> None:
     client, _ = _client("not json at all")
-    with pytest.raises(QuiverError, match="valid JSON"):
+    with pytest.raises(SearchMuxError, match="valid JSON"):
         client.complete("pick one", SCHEMA)
 
 
@@ -82,7 +82,7 @@ def test_response_without_a_text_block_raises() -> None:
     messages = FakeMessages("")
     messages.create = lambda **kw: SimpleNamespace(content=[])
     client = AnthropicClient(client=SimpleNamespace(messages=messages))
-    with pytest.raises(QuiverError, match="no text"):
+    with pytest.raises(SearchMuxError, match="no text"):
         client.complete("pick one", SCHEMA)
 
 

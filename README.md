@@ -1,11 +1,13 @@
-# Quiver
+# SearchMux
 
-**The search layer for AI agents over SerpApi.** Describe what you want to know; Quiver picks the right engine, caches the answer, meters the spend, and makes the whole thing testable offline.
+*A multiplexer routes one input to the right line among many. That is the job: one plain-language question, 100+ search engines, the correct one chosen.*
+
+**The search layer for AI agents over SerpApi.** Describe what you want to know; SearchMux picks the right engine, caches the answer, meters the spend, and makes the whole thing testable offline.
 
 ```python
-from quiver import Quiver
+from searchmux import SearchMux
 
-q = Quiver(budget=50)
+q = SearchMux(budget=50)
 results = q.find("current Pixel 10 prices in India")
 # -> routed to google_shopping, params filled in, normalized Results back
 ```
@@ -22,7 +24,7 @@ SerpApi exposes 100+ search engines. Each has its own parameter vocabulary and i
 
 **SerpApi-backed agents are effectively untestable.** A 30-test suite at 3 searches per test costs 90 credits per CI run, so the rational choice is to not write tests. Across the 120 projects in the BuiltWithSerpApi gallery, none ship a test suite that exercises a search path.
 
-Quiver is the layer underneath all three.
+SearchMux is the layer underneath all three.
 
 ---
 
@@ -35,7 +37,7 @@ Routing accuracy on [`evals/routing.jsonl`](evals/routing.jsonl) — 50 hand-lab
 | random choice over 24 engines | — | — | ~4% |
 | **bm25-top1 (no LLM, no cost)** | **50** | **26** | **52%** |
 | baseline (all engine names, no schemas) | 50 | — | needs a key |
-| quiver (bm25 top-5 + schema-bound synthesis) | 50 | — | needs a key |
+| searchmux (bm25 top-5 + schema-bound synthesis) | 50 | — | needs a key |
 
 Reproduce the free arm on a fresh clone, no API key required:
 
@@ -59,11 +61,11 @@ Python 3.11+. Core dependencies are `httpx`, `pydantic`, and `rank-bm25`. The `a
 ## Quickstart
 
 ```python
-from quiver import Quiver
+from searchmux import SearchMux
 
-q = Quiver(budget=50)
+q = SearchMux(budget=50)
 
-# Routed: Quiver picks the engine and fills the params.
+# Routed: SearchMux picks the engine and fills the params.
 q.find("peer reviewed papers on CRISPR safety")      # -> google_scholar
 q.find("cheapest flight Delhi to Tokyo in March")    # -> google_flights
 
@@ -112,11 +114,11 @@ cost: {'credits_used': 0, 'remaining': 8, 'by_engine': {}, 'cache_hits': 4}
 
 **Normalized results.** One `Result` dataclass across every engine, with `raw` always attached so nothing is lost. Swapping Bing for DuckDuckGo stops meaning a rewritten parser.
 
-**Drop-in for agents.** `q.as_tool()` emits a JSON-schema tool definition that Anthropic tool use, OpenAI function-calling and LangChain all consume directly. `quiver-mcp` runs an MCP stdio server exposing a single `find` tool, so an MCP client gets all 24 engines behind one tool instead of a hundred:
+**Drop-in for agents.** `q.as_tool()` emits a JSON-schema tool definition that Anthropic tool use, OpenAI function-calling and LangChain all consume directly. `searchmux-mcp` runs an MCP stdio server exposing a single `find` tool, so an MCP client gets all 24 engines behind one tool instead of a hundred:
 
 ```bash
 pip install -e ".[mcp,router]"
-quiver-mcp
+searchmux-mcp
 ```
 
 Routing over MCP needs `ANTHROPIC_API_KEY`; without it the server starts, logs a warning, and the `find` tool reports that routing is unconfigured rather than failing obscurely.
@@ -138,9 +140,9 @@ python -m pytest -q
 
 ## How SerpApi is used
 
-Quiver has no reason to exist without SerpApi: every engine definition, parameter schema, and response shape in it describes SerpApi's API, and the library's entire job is getting requests to the right SerpApi endpoint and results back in a usable shape.
+SearchMux has no reason to exist without SerpApi: every engine definition, parameter schema, and response shape in it describes SerpApi's API, and the library's entire job is getting requests to the right SerpApi endpoint and results back in a usable shape.
 
-`quiver/catalog.json` currently catalogues **24 engines** — the Google families (search, shopping, scholar, news, maps, local, flights, hotels, jobs, trends, images, videos, patents, finance, events, lens, autocomplete) plus YouTube, Bing, DuckDuckGo, Amazon, eBay, Walmart and Yelp. Every parameter was verified against the published SerpApi documentation rather than guessed; `amazon` takes `k`, `ebay` takes `_nkw`, `walmart` takes `query`, `yelp` requires `find_loc`.
+`searchmux/catalog.json` currently catalogues **24 engines** — the Google families (search, shopping, scholar, news, maps, local, flights, hotels, jobs, trends, images, videos, patents, finance, events, lens, autocomplete) plus YouTube, Bing, DuckDuckGo, Amazon, eBay, Walmart and Yelp. Every parameter was verified against the published SerpApi documentation rather than guessed; `amazon` takes `k`, `ebay` takes `_nkw`, `walmart` takes `query`, `yelp` requires `find_loc`.
 
 Adding an engine is one JSON record and zero code, so catalogue breadth is a knob rather than a ceiling. The catalog is generated at build time and committed, so the library never does network I/O to resolve a schema and works fully offline.
 
@@ -151,7 +153,7 @@ Stated plainly rather than discovered later:
 - **24 engines, not 100+.** The remaining engines are additive JSON records; the routing and pipeline work is engine-agnostic.
 - **`google_play` is deliberately not catalogued.** Its results nest as `organic_results[].items[]`, a list of lists that a flat results path cannot express. Listing an engine that silently returns nothing is worse than not listing it.
 - **`google_trends` returns timeline entries, not links.** It is a time series, so `Result.title` carries the date and the values live in `Result.raw`.
-- **`examples/demo_cassette.json` is a hand-written synthetic fixture, not a real capture.** It exists so the demo runs on a fresh clone with no key. Record a real one with `Quiver.record()`; the format is identical.
+- **`examples/demo_cassette.json` is a hand-written synthetic fixture, not a real capture.** It exists so the demo runs on a fresh clone with no key. Record a real one with `SearchMux.record()`; the format is identical.
 - **CrewAI and LlamaIndex** consume the emitted JSON-schema tool definition and should work by construction, but only the schema shape is tested here — treat them as unverified rather than supported.
 
 ---

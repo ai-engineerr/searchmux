@@ -1,7 +1,7 @@
 """Tests for framework tool emission."""
 
-from quiver import Quiver
-from quiver.adapters.tool import tool_schema
+from searchmux import SearchMux
+from searchmux.adapters.tool import tool_schema
 
 
 def test_schema_has_a_single_intent_parameter() -> None:
@@ -17,7 +17,7 @@ def test_schema_description_mentions_engine_breadth() -> None:
 
 
 def test_as_tool_returns_the_schema(tmp_path) -> None:
-    q = Quiver(api_key="k", cache=str(tmp_path / "c.db"))
+    q = SearchMux(api_key="k", cache=str(tmp_path / "c.db"))
     assert q.as_tool()["name"] == "search"
 
 
