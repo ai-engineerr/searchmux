@@ -26,3 +26,10 @@ DEFAULT_TTL_CLASS = "news"
 
 # Request keys that must never reach a cache key or a cassette file.
 SECRET_PARAM_KEYS = frozenset({"api_key", "serp_api_key"})
+
+# Router LLM. Opus is the default; set ROUTER_MODEL to a cheaper model
+# if routing volume makes that worthwhile. Effort is low because engine
+# selection is a classification, not a reasoning problem.
+ROUTER_MODEL = "claude-opus-5"
+ROUTER_MAX_TOKENS = 1024
+ROUTER_EFFORT = "low"
