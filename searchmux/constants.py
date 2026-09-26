@@ -6,7 +6,11 @@ ENV_ANTHROPIC_KEY = "ANTHROPIC_API_KEY"
 
 DEFAULT_CACHE_PATH = ".searchmux.db"
 DEFAULT_BUDGET = 50
-DEFAULT_ROUTER_TOP_K = 5
+# None means no narrowing: send every engine to the model. Measured
+# on evals/routing.jsonl, BM25 narrowing to 5 caps accuracy at its
+# own recall (82%) while sending all engines scores 98%. Narrowing is
+# kept for catalogs large enough that prompt size matters.
+DEFAULT_ROUTER_TOP_K = None
 
 HTTP_TIMEOUT = 30.0
 HTTP_MAX_RETRIES = 3

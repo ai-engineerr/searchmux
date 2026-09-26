@@ -35,9 +35,23 @@ Routing accuracy on [`evals/routing.jsonl`](evals/routing.jsonl) — 50 hand-lab
 | arm | n | correct | accuracy |
 | --- | --- | --- | --- |
 | random choice over 24 engines | — | — | ~4% |
-| **bm25-top1 (no LLM, no cost)** | **50** | **26** | **52%** |
-| baseline (all engine names, no schemas) | 50 | — | needs a key |
-| searchmux (bm25 top-5 + schema-bound synthesis) | 50 | — | needs a key |
+| BM25 top-1, no LLM at all | 50 | 26 | 52% |
+| BM25 top-5 + closed schemas | 50 | 41 | 82% |
+| BM25 top-12 + closed schemas | 50 | 44 | 88% |
+| all engine names, no schemas (the `serpapi-mcp` shape) | 50 | 49 | 98% |
+| **SearchMux: all engines + closed schema** | **50** | **49** | **98%** |
+
+### What the numbers actually showed — including where I was wrong
+
+My starting thesis was that narrowing 100+ engines down to a handful before the model sees them would beat handing it everything. **On this eval that is false, and the measurement says so plainly.**
+
+BM25 narrowing to 5 scored 82% — *exactly* its own retrieval recall@5 of 82%. The model chose correctly from every shortlist it was given; the shortlist was simply missing the right engine 18% of the time. BM25 ranked `ebay` above `google_scholar` for "peer reviewed studies on CRISPR off-target effects". Recall@k measured 52 / 72 / 82 / 86 / 88 / 100% at k = 1 / 3 / 5 / 8 / 12 / 24, so narrowing is a hard ceiling, not a filter.
+
+The premise that agents degrade past 20–30 tools simply does not bind at 24 engines. **Narrowing is therefore off by default.**
+
+What survives, and why the schema layer still earns its place: a schema built from every engine's parameters is **rejected by the API as "Schema is too complex"**, so parameter validity cannot be bought by brute force. SearchMux carries `params` as a fixed list of name/value pairs — constant schema size however large the catalog grows — and validates names against the chosen engine afterwards, with one repair attempt. That lands the same 98% engine accuracy as the names-only baseline *while also* guaranteeing the parameter shape, which the baseline does not.
+
+Retrieval stays available (`Router(top_k=12)`) for catalogs big enough that prompt size, not accuracy, becomes the binding cost.
 
 Reproduce the free arm on a fresh clone, no API key required:
 

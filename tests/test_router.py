@@ -145,13 +145,57 @@ def test_built_schema_restricts_engine_to_the_candidates() -> None:
     assert schema["properties"]["engine_id"]["enum"] == candidates
 
 
-def test_built_schema_only_admits_real_param_names() -> None:
+def test_built_schema_carries_params_as_name_value_pairs() -> None:
     router = Router(llm=NullLLM(), top_k=2)
-    candidates = router.retrieve("cheapest flight to Tokyo")
-    schema = router._decision_schema(candidates)
+    schema = router._decision_schema(router.retrieve("flights to Tokyo"))
+    params = schema["properties"]["params"]
+    assert params["type"] == "array"
+    assert set(params["items"]["properties"]) == {"name", "value"}
+    assert params["items"]["additionalProperties"] is False
 
-    allowed = set(schema["properties"]["params"]["properties"])
-    real = set()
-    for engine_id in candidates:
-        real |= set(router._catalog[engine_id].params)
-    assert allowed == real
+
+def test_schema_size_does_not_grow_with_the_catalog() -> None:
+    """A schema built from every engine's params is rejected as too
+    complex by the API, so size must stay flat."""
+    import json
+
+    router = Router(llm=NullLLM())
+    small = len(json.dumps(router._decision_schema(["google"])))
+    large = len(json.dumps(router._decision_schema(router.engine_ids)))
+    # Only the engine_id enum grows; the params schema is fixed.
+    assert large - small < 600
+
+
+def test_router_accepts_pair_list_params() -> None:
+    llm = FakeLLM(
+        {
+            "engine_id": "google",
+            "params": [{"name": "q", "value": "hello"}],
+        }
+    )
+    engine_id, params = Router(llm=llm).route("something")
+    assert engine_id == "google"
+    assert params == {"q": "hello"}
+
+
+def test_router_still_accepts_plain_dict_params() -> None:
+    llm = FakeLLM({"engine_id": "google", "params": {"q": "hello"}})
+    assert Router(llm=llm).route("x")[1] == {"q": "hello"}
+
+
+def test_unknown_pair_name_is_dropped() -> None:
+    llm = FakeLLM(
+        {
+            "engine_id": "google",
+            "params": [
+                {"name": "q", "value": "hello"},
+                {"name": "nonsense", "value": "1"},
+            ],
+        }
+    )
+    assert Router(llm=llm).route("x")[1] == {"q": "hello"}
+
+
+def test_top_k_none_returns_every_engine() -> None:
+    router = Router(llm=NullLLM(), top_k=None)
+    assert len(router.retrieve("anything")) == len(router.engine_ids)

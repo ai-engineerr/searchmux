@@ -57,7 +57,7 @@ class Router:
     def __init__(
         self,
         llm: object | None = None,
-        top_k: int = DEFAULT_ROUTER_TOP_K,
+        top_k: int | None = DEFAULT_ROUTER_TOP_K,
     ) -> None:
         """Build the router and its retrieval index.
 
@@ -93,6 +93,8 @@ class Router:
             zip(self.engine_ids, scores),
             key=lambda pair: (-pair[1], pair[0]),
         )
+        if self._top_k is None:
+            return [engine_id for engine_id, _ in ranked]
         return [engine_id for engine_id, _ in ranked[: self._top_k]]
 
     def route(self, intent: str) -> tuple[str, dict]:
@@ -131,31 +133,34 @@ class Router:
     def _decision_schema(self, candidates: list[str]) -> dict:
         """Build a closed output schema for one candidate set.
 
-        Every object level is closed, which structured outputs require,
-        and `engine_id` is an enum over the candidates while `params`
-        admits only parameter names those candidates actually declare.
-        The model therefore cannot invent either one.
+        `params` is a list of name/value pairs rather than an object
+        keyed by parameter name. That keeps the schema a fixed, small
+        size however large the catalog grows - a schema built from
+        every engine's parameters is rejected outright by the API as
+        too complex. Parameter names are checked against the chosen
+        engine afterwards, in _validate.
 
         Args:
-            candidates: Engine ids surviving retrieval.
+            candidates: Engine ids the model may choose between.
 
         Returns:
             A JSON schema for the routing decision.
         """
-        properties: dict = {}
-        for engine_id in candidates:
-            for name, spec in self._catalog[engine_id].params.items():
-                json_type = _JSON_TYPES.get(spec.get("type", ""), "string")
-                properties.setdefault(name, {"type": json_type})
-
         return {
             "type": "object",
             "properties": {
                 "engine_id": {"type": "string", "enum": list(candidates)},
                 "params": {
-                    "type": "object",
-                    "properties": properties,
-                    "additionalProperties": False,
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {"type": "string"},
+                            "value": {"type": "string"},
+                        },
+                        "required": ["name", "value"],
+                        "additionalProperties": False,
+                    },
                 },
             },
             "required": ["engine_id", "params"],
@@ -210,7 +215,7 @@ class Router:
             )
 
         engine = self._catalog[engine_id]
-        params = _drop_unknown(engine, decision.get("params") or {})
+        params = _drop_unknown(engine, _as_mapping(decision.get("params")))
         missing = [
             name
             for name, spec in engine.params.items()
@@ -264,3 +269,26 @@ def _default_llm() -> object:
     from searchmux.llm import AnthropicClient
 
     return AnthropicClient()
+
+
+def _as_mapping(params: object) -> dict:
+    """Coerce the model's params into a plain dict.
+
+    The schema asks for a list of {name, value} pairs; a plain object
+    is accepted too so an injected or hand-written router stays valid.
+
+    Args:
+        params: Whatever the model returned for `params`.
+
+    Returns:
+        A name -> value mapping, empty when nothing usable was given.
+    """
+    if isinstance(params, dict):
+        return params
+    if not isinstance(params, list):
+        return {}
+    mapping = {}
+    for pair in params:
+        if isinstance(pair, dict) and "name" in pair:
+            mapping[str(pair["name"])] = pair.get("value")
+    return mapping
