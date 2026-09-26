@@ -33,7 +33,9 @@ def test_api_key_is_stripped_from_the_saved_file(tmp_path) -> None:
     path = str(tmp_path / "c.json")
     recorder = Cassette(path, mode="record")
     recorder.capture(
-        "google", {"q": "x", "api_key": "super-secret"}, {"organic_results": []}
+        "google",
+        {"q": "x", "api_key": "super-secret"},
+        {"organic_results": []},
     )
     recorder.save()
 

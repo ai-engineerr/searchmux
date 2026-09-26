@@ -1,5 +1,6 @@
 """Quiver: the search layer for AI agents over SerpApi."""
 
+from quiver.client import Quiver
 from quiver.models import (
     BudgetExceeded,
     CassetteMiss,
@@ -17,6 +18,7 @@ __all__ = [
     "CatalogError",
     "Money",
     "QuiverAPIError",
+    "Quiver",
     "QuiverError",
     "Result",
     "RoutingError",

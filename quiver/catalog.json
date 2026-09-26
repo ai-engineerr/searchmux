@@ -76,7 +76,7 @@
     },
     "results_key": "local_results",
     "result_map": {
-      "title": "title", "url": "link", "snippet": "address",
+      "title": "title", "url": "place_id_search", "snippet": "address",
       "position": "position"
     },
     "ttl_class": "stable"
@@ -91,7 +91,7 @@
     },
     "results_key": "local_results",
     "result_map": {
-      "title": "title", "url": "link", "snippet": "address",
+      "title": "title", "url": "place_id_search", "snippet": "address",
       "position": "position"
     },
     "ttl_class": "stable"
@@ -100,6 +100,7 @@
     "engine_id": "google_flights",
     "description": "Airline routes, fares, and flight schedules",
     "keywords": ["flights", "airfare", "tickets", "fly", "airline", "travel", "route", "schedule"],
+    "params_UNUSED_MARKER": null,
     "params": {
       "departure_id": {"type": "string", "required": true},
       "arrival_id": {"type": "string", "required": true},
