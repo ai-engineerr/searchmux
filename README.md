@@ -112,6 +112,15 @@ cost: {'credits_used': 0, 'remaining': 8, 'by_engine': {}, 'cache_hits': 4}
 
 **Normalized results.** One `Result` dataclass across every engine, with `raw` always attached so nothing is lost. Swapping Bing for DuckDuckGo stops meaning a rewritten parser.
 
+**Drop-in for agents.** `q.as_tool()` emits a JSON-schema tool definition that Anthropic tool use, OpenAI function-calling and LangChain all consume directly. `quiver-mcp` runs an MCP stdio server exposing a single `find` tool, so an MCP client gets all 24 engines behind one tool instead of a hundred:
+
+```bash
+pip install -e ".[mcp,router]"
+quiver-mcp
+```
+
+Routing over MCP needs `ANTHROPIC_API_KEY`; without it the server starts, logs a warning, and the `find` tool reports that routing is unconfigured rather than failing obscurely.
+
 ---
 
 ## Run the tests without an API key
