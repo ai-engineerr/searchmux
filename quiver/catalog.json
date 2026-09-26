@@ -2,16 +2,36 @@
   {
     "engine_id": "google",
     "description": "General web search across the whole internet",
-    "keywords": ["web", "general", "anything", "google", "search"],
+    "keywords": [
+      "web",
+      "general",
+      "anything",
+      "google",
+      "search"
+    ],
     "params": {
-      "q": {"type": "string", "required": true},
-      "gl": {"type": "string", "required": false},
-      "hl": {"type": "string", "required": false},
-      "num": {"type": "integer", "required": false}
+      "q": {
+        "type": "string",
+        "required": true
+      },
+      "gl": {
+        "type": "string",
+        "required": false
+      },
+      "hl": {
+        "type": "string",
+        "required": false
+      },
+      "num": {
+        "type": "integer",
+        "required": false
+      }
     },
     "results_key": "organic_results",
     "result_map": {
-      "title": "title", "url": "link", "snippet": "snippet",
+      "title": "title",
+      "url": "link",
+      "snippet": "snippet",
       "position": "position"
     },
     "ttl_class": "news"
@@ -19,33 +39,76 @@
   {
     "engine_id": "google_shopping",
     "description": "Retail product listings with current prices, sellers, and ratings",
-    "keywords": ["price", "buy", "cost", "product", "shopping", "cheap", "deal"],
+    "keywords": [
+      "price",
+      "buy",
+      "cost",
+      "product",
+      "shopping",
+      "cheap",
+      "deal"
+    ],
     "params": {
-      "q": {"type": "string", "required": true},
-      "gl": {"type": "string", "required": false},
-      "hl": {"type": "string", "required": false}
+      "q": {
+        "type": "string",
+        "required": true
+      },
+      "gl": {
+        "type": "string",
+        "required": false
+      },
+      "hl": {
+        "type": "string",
+        "required": false
+      }
     },
     "results_key": "shopping_results",
     "result_map": {
-      "title": "title", "url": "product_link", "snippet": "snippet",
-      "position": "position", "price": "extracted_price",
-      "currency": "currency", "source": "source"
+      "title": "title",
+      "url": "product_link",
+      "snippet": "snippet",
+      "position": "position",
+      "price": "extracted_price",
+      "currency": "currency",
+      "source": "source"
     },
     "ttl_class": "volatile"
   },
   {
     "engine_id": "google_scholar",
     "description": "Academic papers, citations, and scholarly literature",
-    "keywords": ["paper", "research", "citation", "academic", "journal", "study"],
+    "keywords": [
+      "paper",
+      "research",
+      "citation",
+      "academic",
+      "journal",
+      "study"
+    ],
     "params": {
-      "q": {"type": "string", "required": true},
-      "as_ylo": {"type": "integer", "required": false},
-      "as_yhi": {"type": "integer", "required": false},
-      "num": {"type": "integer", "required": false, "max": 20}
+      "q": {
+        "type": "string",
+        "required": true
+      },
+      "as_ylo": {
+        "type": "integer",
+        "required": false
+      },
+      "as_yhi": {
+        "type": "integer",
+        "required": false
+      },
+      "num": {
+        "type": "integer",
+        "required": false,
+        "max": 20
+      }
     },
     "results_key": "organic_results",
     "result_map": {
-      "title": "title", "url": "link", "snippet": "snippet",
+      "title": "title",
+      "url": "link",
+      "snippet": "snippet",
       "position": "position"
     },
     "ttl_class": "stable"
@@ -53,15 +116,35 @@
   {
     "engine_id": "google_news",
     "description": "Recent news articles and coverage on a topic",
-    "keywords": ["news", "headlines", "breaking", "latest", "happened", "today", "coverage", "updates"],
+    "keywords": [
+      "news",
+      "headlines",
+      "breaking",
+      "latest",
+      "happened",
+      "today",
+      "coverage",
+      "updates"
+    ],
     "params": {
-      "q": {"type": "string", "required": true},
-      "gl": {"type": "string", "required": false},
-      "hl": {"type": "string", "required": false}
+      "q": {
+        "type": "string",
+        "required": true
+      },
+      "gl": {
+        "type": "string",
+        "required": false
+      },
+      "hl": {
+        "type": "string",
+        "required": false
+      }
     },
     "results_key": "news_results",
     "result_map": {
-      "title": "title", "url": "link", "snippet": "snippet",
+      "title": "title",
+      "url": "link",
+      "snippet": "snippet",
       "position": "position"
     },
     "ttl_class": "news"
@@ -69,14 +152,30 @@
   {
     "engine_id": "google_maps",
     "description": "Places, businesses, and addresses with ratings and contact details",
-    "keywords": ["places", "businesses", "address", "location", "directions", "map", "nearby"],
+    "keywords": [
+      "places",
+      "businesses",
+      "address",
+      "location",
+      "directions",
+      "map",
+      "nearby"
+    ],
     "params": {
-      "q": {"type": "string", "required": true},
-      "ll": {"type": "string", "required": false}
+      "q": {
+        "type": "string",
+        "required": true
+      },
+      "ll": {
+        "type": "string",
+        "required": false
+      }
     },
     "results_key": "local_results",
     "result_map": {
-      "title": "title", "url": "place_id_search", "snippet": "address",
+      "title": "title",
+      "url": "place_id_search",
+      "snippet": "address",
       "position": "position"
     },
     "ttl_class": "stable"
@@ -84,14 +183,30 @@
   {
     "engine_id": "google_local",
     "description": "Nearby businesses in a locality, such as restaurants or shops",
-    "keywords": ["nearby", "local", "businesses", "around me", "restaurants", "shops", "open now"],
+    "keywords": [
+      "nearby",
+      "local",
+      "businesses",
+      "around me",
+      "restaurants",
+      "shops",
+      "open now"
+    ],
     "params": {
-      "q": {"type": "string", "required": true},
-      "ll": {"type": "string", "required": false}
+      "q": {
+        "type": "string",
+        "required": true
+      },
+      "ll": {
+        "type": "string",
+        "required": false
+      }
     },
     "results_key": "local_results",
     "result_map": {
-      "title": "title", "url": "place_id_search", "snippet": "address",
+      "title": "title",
+      "url": "place_id_search",
+      "snippet": "address",
       "position": "position"
     },
     "ttl_class": "stable"
@@ -99,31 +214,71 @@
   {
     "engine_id": "google_flights",
     "description": "Airline routes, fares, and flight schedules",
-    "keywords": ["flights", "airfare", "tickets", "fly", "airline", "travel", "route", "schedule"],
+    "keywords": [
+      "flights",
+      "airfare",
+      "tickets",
+      "fly",
+      "airline",
+      "travel",
+      "route",
+      "schedule"
+    ],
     "params": {
-      "departure_id": {"type": "string", "required": true},
-      "arrival_id": {"type": "string", "required": true},
-      "outbound_date": {"type": "string", "required": true}
+      "departure_id": {
+        "type": "string",
+        "required": true
+      },
+      "arrival_id": {
+        "type": "string",
+        "required": true
+      },
+      "outbound_date": {
+        "type": "string",
+        "required": true
+      }
     },
     "results_key": "best_flights",
     "result_map": {
-      "title": "type", "url": "booking_token", "snippet": "airline",
-      "position": "position", "price": "price"
+      "title": "type",
+      "url": "booking_token",
+      "snippet": "airline",
+      "position": "position",
+      "price": "price"
     },
     "ttl_class": "volatile"
   },
   {
     "engine_id": "google_hotels",
     "description": "Hotel availability and nightly rates for a stay",
-    "keywords": ["hotels", "stay", "rooms", "booking", "nightly rate", "accommodation", "where to stay"],
+    "keywords": [
+      "hotels",
+      "stay",
+      "rooms",
+      "booking",
+      "nightly rate",
+      "accommodation",
+      "where to stay"
+    ],
     "params": {
-      "q": {"type": "string", "required": true},
-      "check_in_date": {"type": "string", "required": true},
-      "check_out_date": {"type": "string", "required": true}
+      "q": {
+        "type": "string",
+        "required": true
+      },
+      "check_in_date": {
+        "type": "string",
+        "required": true
+      },
+      "check_out_date": {
+        "type": "string",
+        "required": true
+      }
     },
     "results_key": "properties",
     "result_map": {
-      "title": "name", "url": "serpapi_property_details_link", "snippet": "type",
+      "title": "name",
+      "url": "serpapi_property_details_link",
+      "snippet": "type",
       "position": "position"
     },
     "ttl_class": "volatile"
@@ -131,14 +286,30 @@
   {
     "engine_id": "google_jobs",
     "description": "Job postings and openings matching a role or company",
-    "keywords": ["jobs", "hiring", "openings", "career", "vacancy", "employment", "positions"],
+    "keywords": [
+      "jobs",
+      "hiring",
+      "openings",
+      "career",
+      "vacancy",
+      "employment",
+      "positions"
+    ],
     "params": {
-      "q": {"type": "string", "required": true},
-      "location": {"type": "string", "required": false}
+      "q": {
+        "type": "string",
+        "required": true
+      },
+      "location": {
+        "type": "string",
+        "required": false
+      }
     },
     "results_key": "jobs_results",
     "result_map": {
-      "title": "title", "url": "link", "snippet": "description",
+      "title": "title",
+      "url": "link",
+      "snippet": "description",
       "position": "position"
     },
     "ttl_class": "news"
@@ -146,30 +317,61 @@
   {
     "engine_id": "google_trends",
     "description": "Search interest over time for a topic",
-    "keywords": ["trend", "popularity", "interest over time", "search volume", "rising", "how popular"],
+    "keywords": [
+      "trend",
+      "popularity",
+      "interest over time",
+      "search volume",
+      "rising",
+      "how popular"
+    ],
     "params": {
-      "q": {"type": "string", "required": true},
-      "data_type": {"type": "string", "required": false}
+      "q": {
+        "type": "string",
+        "required": true
+      },
+      "data_type": {
+        "type": "string",
+        "required": false
+      }
     },
-    "results_key": "interest_over_time",
+    "results_key": "interest_over_time.timeline_data",
     "result_map": {
-      "title": "query", "url": "link", "snippet": "value",
-      "position": "position"
+      "title": "date",
+      "snippet": "date"
     },
     "ttl_class": "news"
   },
   {
     "engine_id": "google_images",
     "description": "Pictures and visual references for a subject",
-    "keywords": ["pictures", "photos", "images", "visual", "what does it look like", "pics"],
+    "keywords": [
+      "pictures",
+      "photos",
+      "images",
+      "visual",
+      "what does it look like",
+      "pics"
+    ],
     "params": {
-      "q": {"type": "string", "required": true},
-      "gl": {"type": "string", "required": false},
-      "hl": {"type": "string", "required": false}
+      "q": {
+        "type": "string",
+        "required": true
+      },
+      "gl": {
+        "type": "string",
+        "required": false
+      },
+      "hl": {
+        "type": "string",
+        "required": false
+      }
     },
     "results_key": "images_results",
     "result_map": {
-      "title": "title", "url": "original", "snippet": "source",
+      "title": "title",
+      "url": "original",
+      "snippet": "source",
       "position": "position"
     },
     "ttl_class": "stable"
@@ -177,15 +379,32 @@
   {
     "engine_id": "google_videos",
     "description": "Video clips across the web on a topic",
-    "keywords": ["videos", "clips", "watch", "footage", "recordings"],
+    "keywords": [
+      "videos",
+      "clips",
+      "watch",
+      "footage",
+      "recordings"
+    ],
     "params": {
-      "q": {"type": "string", "required": true},
-      "gl": {"type": "string", "required": false},
-      "hl": {"type": "string", "required": false}
+      "q": {
+        "type": "string",
+        "required": true
+      },
+      "gl": {
+        "type": "string",
+        "required": false
+      },
+      "hl": {
+        "type": "string",
+        "required": false
+      }
     },
     "results_key": "video_results",
     "result_map": {
-      "title": "title", "url": "link", "snippet": "snippet",
+      "title": "title",
+      "url": "link",
+      "snippet": "snippet",
       "position": "position"
     },
     "ttl_class": "news"
@@ -193,13 +412,25 @@
   {
     "engine_id": "google_patents",
     "description": "Patents and inventions matching a topic or number",
-    "keywords": ["patents", "invention", "patent number", "prior art", "filed", "inventor"],
+    "keywords": [
+      "patents",
+      "invention",
+      "patent number",
+      "prior art",
+      "filed",
+      "inventor"
+    ],
     "params": {
-      "q": {"type": "string", "required": true}
+      "q": {
+        "type": "string",
+        "required": true
+      }
     },
     "results_key": "organic_results",
     "result_map": {
-      "title": "title", "url": "link", "snippet": "snippet",
+      "title": "title",
+      "url": "link",
+      "snippet": "snippet",
       "position": "position"
     },
     "ttl_class": "stable"
@@ -207,58 +438,84 @@
   {
     "engine_id": "google_finance",
     "description": "Stock quotes and current market data for a ticker",
-    "keywords": ["stock", "price", "shares", "market", "ticker", "quote", "worth"],
+    "keywords": [
+      "stock",
+      "price",
+      "shares",
+      "market",
+      "ticker",
+      "quote",
+      "worth"
+    ],
     "params": {
-      "q": {"type": "string", "required": true}
+      "q": {
+        "type": "string",
+        "required": true
+      }
     },
     "results_key": "summary",
     "result_map": {
-      "title": "title", "url": "link", "snippet": "stock",
-      "position": "position", "price": "extracted_price", "currency": "currency"
+      "title": "title",
+      "url": "link",
+      "snippet": "stock",
+      "position": "position",
+      "price": "extracted_price",
+      "currency": "currency"
     },
     "ttl_class": "volatile"
   },
   {
     "engine_id": "google_events",
     "description": "Upcoming local events such as concerts and shows",
-    "keywords": ["events", "happening", "concerts", "tickets", "schedule", "this weekend", "whats on"],
+    "keywords": [
+      "events",
+      "happening",
+      "concerts",
+      "tickets",
+      "schedule",
+      "this weekend",
+      "whats on"
+    ],
     "params": {
-      "q": {"type": "string", "required": true},
-      "location": {"type": "string", "required": false}
+      "q": {
+        "type": "string",
+        "required": true
+      },
+      "location": {
+        "type": "string",
+        "required": false
+      }
     },
     "results_key": "events_results",
     "result_map": {
-      "title": "title", "url": "link", "snippet": "description",
+      "title": "title",
+      "url": "link",
+      "snippet": "description",
       "position": "position"
     },
     "ttl_class": "news"
   },
   {
-    "engine_id": "google_play",
-    "description": "Android apps and games available to download",
-    "keywords": ["apps", "android", "games", "download", "install", "mobile app"],
-    "params": {
-      "q": {"type": "string", "required": true},
-      "gl": {"type": "string", "required": false},
-      "hl": {"type": "string", "required": false}
-    },
-    "results_key": "organic_results",
-    "result_map": {
-      "title": "title", "url": "link", "snippet": "description",
-      "position": "position"
-    },
-    "ttl_class": "stable"
-  },
-  {
     "engine_id": "google_lens",
     "description": "Look up an image to find what it is or where to buy it",
-    "keywords": ["reverse image", "similar images", "identify", "what is this", "find this picture"],
+    "keywords": [
+      "reverse image",
+      "similar images",
+      "identify",
+      "what is this",
+      "find this picture"
+    ],
     "params": {
-      "url": {"type": "string", "required": true}
+      "url": {
+        "type": "string",
+        "required": true
+      }
     },
     "results_key": "visual_matches",
     "result_map": {
-      "title": "title", "url": "link", "snippet": "source",
+      "title": "title",
+      "url": "link",
+      "snippet": "source",
       "position": "position"
     },
     "ttl_class": "stable"
@@ -266,13 +523,24 @@
   {
     "engine_id": "google_autocomplete",
     "description": "Query suggestions as a search is being typed",
-    "keywords": ["suggestions", "autocomplete", "related searches", "predictions", "what people search"],
+    "keywords": [
+      "suggestions",
+      "autocomplete",
+      "related searches",
+      "predictions",
+      "what people search"
+    ],
     "params": {
-      "q": {"type": "string", "required": true}
+      "q": {
+        "type": "string",
+        "required": true
+      }
     },
     "results_key": "suggestions",
     "result_map": {
-      "title": "value", "url": "serpapi_link", "snippet": "value",
+      "title": "value",
+      "url": "serpapi_link",
+      "snippet": "value",
       "position": "position"
     },
     "ttl_class": "news"
@@ -280,13 +548,25 @@
   {
     "engine_id": "youtube",
     "description": "YouTube videos and reviews on a topic",
-    "keywords": ["video", "tutorial", "watch", "review", "how to", "clip"],
+    "keywords": [
+      "video",
+      "tutorial",
+      "watch",
+      "review",
+      "how to",
+      "clip"
+    ],
     "params": {
-      "search_query": {"type": "string", "required": true}
+      "search_query": {
+        "type": "string",
+        "required": true
+      }
     },
     "results_key": "video_results",
     "result_map": {
-      "title": "title", "url": "link", "snippet": "description",
+      "title": "title",
+      "url": "link",
+      "snippet": "description",
       "position": "position"
     },
     "ttl_class": "news"
@@ -294,13 +574,23 @@
   {
     "engine_id": "bing",
     "description": "Web search results from Bing",
-    "keywords": ["web", "general", "results", "alternative search"],
+    "keywords": [
+      "web",
+      "general",
+      "results",
+      "alternative search"
+    ],
     "params": {
-      "q": {"type": "string", "required": true}
+      "q": {
+        "type": "string",
+        "required": true
+      }
     },
     "results_key": "organic_results",
     "result_map": {
-      "title": "title", "url": "link", "snippet": "snippet",
+      "title": "title",
+      "url": "link",
+      "snippet": "snippet",
       "position": "position"
     },
     "ttl_class": "news"
@@ -308,13 +598,24 @@
   {
     "engine_id": "duckduckgo",
     "description": "Privacy-preserving web search results",
-    "keywords": ["web", "general", "private", "anonymous", "no tracking"],
+    "keywords": [
+      "web",
+      "general",
+      "private",
+      "anonymous",
+      "no tracking"
+    ],
     "params": {
-      "q": {"type": "string", "required": true}
+      "q": {
+        "type": "string",
+        "required": true
+      }
     },
     "results_key": "organic_results",
     "result_map": {
-      "title": "title", "url": "link", "snippet": "snippet",
+      "title": "title",
+      "url": "link",
+      "snippet": "snippet",
       "position": "position"
     },
     "ttl_class": "news"
@@ -322,56 +623,110 @@
   {
     "engine_id": "amazon",
     "description": "Product listings from the Amazon marketplace",
-    "keywords": ["buy", "price", "product", "shopping", "reviews", "prime"],
+    "keywords": [
+      "buy",
+      "price",
+      "product",
+      "shopping",
+      "reviews",
+      "prime"
+    ],
     "params": {
-      "k": {"type": "string", "required": true}
+      "k": {
+        "type": "string",
+        "required": true
+      }
     },
     "results_key": "organic_results",
     "result_map": {
-      "title": "title", "url": "link", "snippet": "snippet",
-      "position": "position", "price": "price"
+      "title": "title",
+      "url": "link",
+      "snippet": "snippet",
+      "position": "position",
+      "price": "price"
     },
     "ttl_class": "volatile"
   },
   {
     "engine_id": "ebay",
     "description": "Auctions and used goods listed on eBay",
-    "keywords": ["auction", "used", "buy", "bid", "secondhand", "deal"],
+    "keywords": [
+      "auction",
+      "used",
+      "buy",
+      "bid",
+      "secondhand",
+      "deal"
+    ],
     "params": {
-      "_nkw": {"type": "string", "required": true}
+      "_nkw": {
+        "type": "string",
+        "required": true
+      }
     },
     "results_key": "organic_results",
     "result_map": {
-      "title": "title", "url": "link", "snippet": "snippet",
-      "position": "position", "price": "price"
+      "title": "title",
+      "url": "link",
+      "snippet": "snippet",
+      "position": "position",
+      "price": "price"
     },
     "ttl_class": "volatile"
   },
   {
     "engine_id": "walmart",
     "description": "Product inventory and prices at Walmart",
-    "keywords": ["buy", "price", "grocery", "retail", "store", "deal"],
+    "keywords": [
+      "buy",
+      "price",
+      "grocery",
+      "retail",
+      "store",
+      "deal"
+    ],
     "params": {
-      "query": {"type": "string", "required": true}
+      "query": {
+        "type": "string",
+        "required": true
+      }
     },
     "results_key": "organic_results",
     "result_map": {
-      "title": "title", "url": "product_page_url", "snippet": "snippet",
-      "position": "position", "price": "price"
+      "title": "title",
+      "url": "product_page_url",
+      "snippet": "snippet",
+      "position": "position",
+      "price": "price"
     },
     "ttl_class": "volatile"
   },
   {
     "engine_id": "yelp",
     "description": "Restaurant and service reviews with ratings",
-    "keywords": ["reviews", "restaurant", "rating", "recommendation", "best place", "service"],
+    "keywords": [
+      "reviews",
+      "restaurant",
+      "rating",
+      "recommendation",
+      "best place",
+      "service"
+    ],
     "params": {
-      "find_desc": {"type": "string", "required": false},
-      "find_loc": {"type": "string", "required": true}
+      "find_desc": {
+        "type": "string",
+        "required": false
+      },
+      "find_loc": {
+        "type": "string",
+        "required": true
+      }
     },
     "results_key": "organic_results",
     "result_map": {
-      "title": "title", "url": "link", "snippet": "snippet",
+      "title": "title",
+      "url": "link",
+      "snippet": "snippet",
       "position": "position"
     },
     "ttl_class": "stable"

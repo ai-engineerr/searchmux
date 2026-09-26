@@ -1,0 +1,94 @@
+{
+  "version": 1,
+  "note": "SYNTHETIC FIXTURE - not a real SerpApi capture. Hand-written so examples/pixel_agent.py runs offline with no API key. Record a real cassette with Quiver.record() against a live key; the format is identical.",
+  "entries": [
+    {
+      "engine_id": "google_shopping",
+      "params": { "q": "Pixel 10 price India", "gl": "in" },
+      "body": {
+        "shopping_results": [
+          {
+            "position": 1,
+            "title": "Google Pixel 10 (128GB, Obsidian)",
+            "product_link": "https://example.test/pixel-10-128",
+            "extracted_price": 79999.0,
+            "currency": "INR",
+            "source": "ExampleRetailerA",
+            "snippet": "128GB, 12GB RAM, dual rear camera"
+          },
+          {
+            "position": 2,
+            "title": "Google Pixel 10 (256GB, Porcelain)",
+            "product_link": "https://example.test/pixel-10-256",
+            "extracted_price": 89999.0,
+            "currency": "INR",
+            "source": "ExampleRetailerB",
+            "snippet": "256GB, 12GB RAM"
+          },
+          {
+            "position": 3,
+            "title": "Google Pixel 10 (128GB, open box)",
+            "product_link": "https://example.test/pixel-10-openbox",
+            "extracted_price": 71499.0,
+            "currency": "INR",
+            "source": "ExampleRetailerC",
+            "snippet": "Open box, 6 month warranty"
+          }
+        ]
+      }
+    },
+    {
+      "engine_id": "google_news",
+      "params": { "q": "Pixel 10 price drop" },
+      "body": {
+        "news_results": [
+          {
+            "position": 1,
+            "title": "Pixel 10 discounts expected around festive sales",
+            "link": "https://example.test/news/festive-pixel",
+            "snippet": "Retailers historically cut flagship prices in the festive window."
+          },
+          {
+            "position": 2,
+            "title": "Google confirms Pixel 10a for next quarter",
+            "link": "https://example.test/news/pixel-10a",
+            "snippet": "A cheaper variant is scheduled, which typically softens current pricing."
+          }
+        ]
+      }
+    },
+    {
+      "engine_id": "youtube",
+      "params": { "search_query": "Pixel 10 review" },
+      "body": {
+        "video_results": [
+          {
+            "position": 1,
+            "title": "Pixel 10 review: three months later",
+            "link": "https://example.test/watch/abc123",
+            "snippet": "Long-term battery and camera notes."
+          },
+          {
+            "position": 2,
+            "title": "Pixel 10 vs Pixel 9a: worth the jump?",
+            "link": "https://example.test/watch/def456",
+            "snippet": "Side by side comparison."
+          }
+        ]
+      }
+    },
+    {
+      "engine_id": "google_trends",
+      "params": { "q": "Pixel 10" },
+      "body": {
+        "interest_over_time": {
+          "timeline_data": [
+            { "date": "Jul 2026", "values": [{ "value": 44 }] },
+            { "date": "Aug 2026", "values": [{ "value": 71 }] },
+            { "date": "Sep 2026", "values": [{ "value": 58 }] }
+          ]
+        }
+      }
+    }
+  ]
+}

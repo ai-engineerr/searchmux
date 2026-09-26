@@ -22,8 +22,6 @@
 {"intent": "where to stay in Kyoto for three nights in April", "expected": "google_hotels"}
 {"intent": "concerts and gigs happening in Pune this weekend", "expected": "google_events"}
 {"intent": "tech meetups and conferences coming up in Hyderabad", "expected": "google_events"}
-{"intent": "highly rated note taking apps for android", "expected": "google_play"}
-{"intent": "download a free android game for kids", "expected": "google_play"}
 {"intent": "identify the plant in this photograph", "expected": "google_lens"}
 {"intent": "find the original source of this image", "expected": ["google_lens", "google_images"]}
 {"intent": "pictures of mid century modern living rooms", "expected": "google_images"}
@@ -48,3 +46,5 @@
 {"intent": "official documentation for the python logging module", "expected": "google"}
 {"intent": "coffee shops with wifi open late near me", "expected": ["google_local", "google_maps", "yelp"]}
 {"intent": "trending searches in India today", "expected": "google_trends"}
+{"intent": "who won the cricket match last night", "expected": "google"}
+{"intent": "best price on a wireless mouse right now", "expected": ["google_shopping", "amazon"]}

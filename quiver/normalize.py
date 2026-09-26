@@ -23,7 +23,7 @@ def normalize(engine_id: str, body: dict) -> list[Result]:
         Normalized results, in the engine's own order.
     """
     engine = get_engine(engine_id)
-    items = body.get(engine.results_key)
+    items = _dig(body, engine.results_key)
 
     if not items:
         logger.debug("no %s in %s response", engine.results_key, engine_id)
@@ -81,3 +81,26 @@ def _build_extra(mapping: dict, item: dict) -> dict:
     if seller:
         extra["seller"] = seller
     return extra
+
+def _dig(body: dict, path: str) -> object:
+    """Return the value at a dotted path, or None if absent.
+
+    Some engines nest their results one level down, e.g. Google Trends
+    puts them at ``interest_over_time.timeline_data``. A path without
+    dots behaves exactly like a plain lookup.
+
+    Args:
+        body: Raw decoded SerpApi response.
+        path: Key, or dot-separated path of keys.
+
+    Returns:
+        The value found, or None if any segment is missing.
+    """
+    node: object = body
+    for part in path.split("."):
+        if not isinstance(node, dict):
+            return None
+        node = node.get(part)
+        if node is None:
+            return None
+    return node

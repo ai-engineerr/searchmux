@@ -60,3 +60,29 @@ def test_item_without_title_is_skipped_not_fatal() -> None:
     body = {"organic_results": [{"link": "u"}, {"title": "ok", "link": "v"}]}
     results = normalize("google", body)
     assert [r.title for r in results] == ["ok"]
+
+
+def test_nested_results_key_is_reached_by_dotted_path() -> None:
+    """Google Trends nests its results one level down."""
+    body = {
+        "interest_over_time": {
+            "timeline_data": [{"date": "Jan 2026", "values": [{"value": 7}]}]
+        }
+    }
+    results = normalize("google_trends", body)
+    assert len(results) == 1
+    assert results[0].title == "Jan 2026"
+    assert results[0].raw["values"] == [{"value": 7}]
+
+
+def test_missing_intermediate_key_returns_empty_list() -> None:
+    assert normalize("google_trends", {"search_metadata": {}}) == []
+
+
+def test_partially_present_nested_path_returns_empty_list() -> None:
+    assert normalize("google_trends", {"interest_over_time": {}}) == []
+
+
+def test_non_dict_along_the_path_returns_empty_list() -> None:
+    body = {"interest_over_time": "unexpected string"}
+    assert normalize("google_trends", body) == []
