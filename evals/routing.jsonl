@@ -1,0 +1,50 @@
+{"intent": "what does the Pixel 10 cost in India right now", "expected": "google_shopping"}
+{"intent": "cheapest place to buy AirPods Pro online", "expected": ["google_shopping", "amazon", "walmart"]}
+{"intent": "peer reviewed studies on CRISPR off-target effects", "expected": "google_scholar"}
+{"intent": "who has cited the original transformer paper", "expected": "google_scholar"}
+{"intent": "cheapest flight from Delhi to Tokyo next month", "expected": "google_flights"}
+{"intent": "direct flights from Mumbai to Singapore on the 14th", "expected": "google_flights"}
+{"intent": "good ramen places near Shibuya station", "expected": ["google_maps", "google_local"]}
+{"intent": "opening hours and address of the nearest hardware store", "expected": ["google_maps", "google_local"]}
+{"intent": "what happened in the budget announcement this week", "expected": "google_news"}
+{"intent": "latest coverage of the semiconductor export rules", "expected": "google_news"}
+{"intent": "video reviews of the Sony WH-1000XM6 headphones", "expected": ["youtube", "google_videos"]}
+{"intent": "tutorial showing how to replace a laptop battery", "expected": ["youtube", "google_videos"]}
+{"intent": "is interest in electric scooters growing or falling", "expected": "google_trends"}
+{"intent": "how has search demand for protein powder changed this year", "expected": "google_trends"}
+{"intent": "remote python developer roles in Bangalore", "expected": "google_jobs"}
+{"intent": "entry level data analyst openings hiring now", "expected": "google_jobs"}
+{"intent": "who owns the patent on rounded rectangle interfaces", "expected": "google_patents"}
+{"intent": "existing inventions for foldable phone hinges", "expected": "google_patents"}
+{"intent": "current share price and market cap of Infosys", "expected": "google_finance"}
+{"intent": "how did the Nifty index close today", "expected": "google_finance"}
+{"intent": "hotels in Goa with a pool under 5000 a night", "expected": "google_hotels"}
+{"intent": "where to stay in Kyoto for three nights in April", "expected": "google_hotels"}
+{"intent": "concerts and gigs happening in Pune this weekend", "expected": "google_events"}
+{"intent": "tech meetups and conferences coming up in Hyderabad", "expected": "google_events"}
+{"intent": "highly rated note taking apps for android", "expected": "google_play"}
+{"intent": "download a free android game for kids", "expected": "google_play"}
+{"intent": "identify the plant in this photograph", "expected": "google_lens"}
+{"intent": "find the original source of this image", "expected": ["google_lens", "google_images"]}
+{"intent": "pictures of mid century modern living rooms", "expected": "google_images"}
+{"intent": "photos of the Ajanta cave paintings", "expected": "google_images"}
+{"intent": "what are people typing after how to invest in", "expected": "google_autocomplete"}
+{"intent": "common query completions for best laptop for", "expected": "google_autocomplete"}
+{"intent": "search the web without being tracked", "expected": "duckduckgo"}
+{"intent": "privacy respecting web search for a sensitive question", "expected": "duckduckgo"}
+{"intent": "microsoft web search results for enterprise licensing", "expected": "bing"}
+{"intent": "compare results from a second web search provider", "expected": ["bing", "duckduckgo"]}
+{"intent": "a used mechanical keyboard from a private seller", "expected": "ebay"}
+{"intent": "vintage film camera listings at auction", "expected": "ebay"}
+{"intent": "prime eligible cordless vacuum with good ratings", "expected": "amazon"}
+{"intent": "customer reviews of a stand mixer on the big marketplace", "expected": ["amazon", "walmart"]}
+{"intent": "in store grocery prices for cereal and milk", "expected": "walmart"}
+{"intent": "big box retailer stock for a 55 inch television", "expected": "walmart"}
+{"intent": "restaurant reviews and ratings for italian food downtown", "expected": "yelp"}
+{"intent": "is this plumber any good according to customers", "expected": ["yelp", "google_local"]}
+{"intent": "how does photosynthesis actually work", "expected": "google"}
+{"intent": "what is the capital of Kazakhstan", "expected": "google"}
+{"intent": "explain the offside rule in football", "expected": "google"}
+{"intent": "official documentation for the python logging module", "expected": "google"}
+{"intent": "coffee shops with wifi open late near me", "expected": ["google_local", "google_maps", "yelp"]}
+{"intent": "trending searches in India today", "expected": "google_trends"}

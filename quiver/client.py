@@ -11,6 +11,7 @@ import os
 from collections.abc import Iterator
 from contextlib import contextmanager
 
+from quiver.adapters.tool import tool_schema
 from quiver.budget import Budget
 from quiver.cache import Cache, request_key
 from quiver.cassette import MODE_RECORD, MODE_REPLAY, Cassette
@@ -115,6 +116,14 @@ class Quiver:
             )
         engine_id, routed = self._router.route(intent)
         return self.search(engine=engine_id, **{**routed, **params})
+
+    def as_tool(self) -> dict:
+        """Return a function-calling schema for this client.
+
+        Returns:
+            A schema accepted by Anthropic, OpenAI, and LangChain.
+        """
+        return tool_schema()
 
     def _fetch(self, engine: str, params: dict) -> dict:
         """Replay, or spend a credit and call SerpApi.

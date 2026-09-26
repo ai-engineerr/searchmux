@@ -100,7 +100,6 @@
     "engine_id": "google_flights",
     "description": "Airline routes, fares, and flight schedules",
     "keywords": ["flights", "airfare", "tickets", "fly", "airline", "travel", "route", "schedule"],
-    "params_UNUSED_MARKER": null,
     "params": {
       "departure_id": {"type": "string", "required": true},
       "arrival_id": {"type": "string", "required": true},
@@ -119,12 +118,12 @@
     "keywords": ["hotels", "stay", "rooms", "booking", "nightly rate", "accommodation", "where to stay"],
     "params": {
       "q": {"type": "string", "required": true},
-      "check_in_date": {"type": "string", "required": false},
-      "check_out_date": {"type": "string", "required": false}
+      "check_in_date": {"type": "string", "required": true},
+      "check_out_date": {"type": "string", "required": true}
     },
     "results_key": "properties",
     "result_map": {
-      "title": "name", "url": "link", "snippet": "description",
+      "title": "name", "url": "serpapi_property_details_link", "snippet": "type",
       "position": "position"
     },
     "ttl_class": "volatile"
@@ -212,10 +211,10 @@
     "params": {
       "q": {"type": "string", "required": true}
     },
-    "results_key": "markets",
+    "results_key": "summary",
     "result_map": {
-      "title": "name", "url": "link", "snippet": "stock",
-      "position": "position", "price": "price"
+      "title": "title", "url": "link", "snippet": "stock",
+      "position": "position", "price": "extracted_price", "currency": "currency"
     },
     "ttl_class": "volatile"
   },
@@ -273,7 +272,7 @@
     },
     "results_key": "suggestions",
     "result_map": {
-      "title": "value", "url": "link", "snippet": "value",
+      "title": "value", "url": "serpapi_link", "snippet": "value",
       "position": "position"
     },
     "ttl_class": "news"
@@ -325,7 +324,7 @@
     "description": "Product listings from the Amazon marketplace",
     "keywords": ["buy", "price", "product", "shopping", "reviews", "prime"],
     "params": {
-      "q": {"type": "string", "required": true}
+      "k": {"type": "string", "required": true}
     },
     "results_key": "organic_results",
     "result_map": {
@@ -339,7 +338,7 @@
     "description": "Auctions and used goods listed on eBay",
     "keywords": ["auction", "used", "buy", "bid", "secondhand", "deal"],
     "params": {
-      "q": {"type": "string", "required": true}
+      "_nkw": {"type": "string", "required": true}
     },
     "results_key": "organic_results",
     "result_map": {
@@ -353,11 +352,11 @@
     "description": "Product inventory and prices at Walmart",
     "keywords": ["buy", "price", "grocery", "retail", "store", "deal"],
     "params": {
-      "q": {"type": "string", "required": true}
+      "query": {"type": "string", "required": true}
     },
     "results_key": "organic_results",
     "result_map": {
-      "title": "title", "url": "link", "snippet": "snippet",
+      "title": "title", "url": "product_page_url", "snippet": "snippet",
       "position": "position", "price": "price"
     },
     "ttl_class": "volatile"
@@ -367,8 +366,8 @@
     "description": "Restaurant and service reviews with ratings",
     "keywords": ["reviews", "restaurant", "rating", "recommendation", "best place", "service"],
     "params": {
-      "q": {"type": "string", "required": true},
-      "location": {"type": "string", "required": false}
+      "find_desc": {"type": "string", "required": false},
+      "find_loc": {"type": "string", "required": true}
     },
     "results_key": "organic_results",
     "result_map": {
