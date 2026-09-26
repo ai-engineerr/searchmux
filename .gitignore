@@ -11,3 +11,5 @@ dist/
 build/
 examples/.searchmux-demo.db
 examples/recorded.json
+SearchMux-one-pager.pdf
+images/
