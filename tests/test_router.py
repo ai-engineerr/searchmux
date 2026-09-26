@@ -111,3 +111,47 @@ def test_unknown_param_is_dropped_not_fatal() -> None:
     )
     _, params = Router(llm=llm).route("something")
     assert params == {"q": "x"}
+
+
+def _closed_everywhere(schema: dict, path: str = "$") -> list[str]:
+    """Return paths of object schemas missing additionalProperties."""
+    problems = []
+    if schema.get("type") == "object":
+        if schema.get("additionalProperties") is not False:
+            problems.append(path)
+        for name, sub in (schema.get("properties") or {}).items():
+            problems += _closed_everywhere(sub, f"{path}.{name}")
+    return problems
+
+
+def test_built_schema_is_closed_at_every_object_level() -> None:
+    """Structured outputs reject any open object, nested ones included."""
+    router = Router(llm=NullLLM(), top_k=4)
+    candidates = router.retrieve("cheapest flight to Tokyo")
+    schema = router._decision_schema(candidates)
+    assert _closed_everywhere(schema) == []
+
+
+def test_engine_only_schema_is_closed() -> None:
+    from searchmux.router import ENGINE_ONLY_SCHEMA
+
+    assert _closed_everywhere(ENGINE_ONLY_SCHEMA) == []
+
+
+def test_built_schema_restricts_engine_to_the_candidates() -> None:
+    router = Router(llm=NullLLM(), top_k=3)
+    candidates = router.retrieve("academic papers on protein folding")
+    schema = router._decision_schema(candidates)
+    assert schema["properties"]["engine_id"]["enum"] == candidates
+
+
+def test_built_schema_only_admits_real_param_names() -> None:
+    router = Router(llm=NullLLM(), top_k=2)
+    candidates = router.retrieve("cheapest flight to Tokyo")
+    schema = router._decision_schema(candidates)
+
+    allowed = set(schema["properties"]["params"]["properties"])
+    real = set()
+    for engine_id in candidates:
+        real |= set(router._catalog[engine_id].params)
+    assert allowed == real

@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-router = ["anthropic>=0.40"]
+router = ["anthropic>=1.8"]
 mcp = ["mcp>=2"]
 dev = ["pytest>=8.0"]
 

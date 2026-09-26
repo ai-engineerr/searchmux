@@ -20,6 +20,7 @@ import os
 from pathlib import Path
 
 from searchmux import SearchMux
+from searchmux.envfile import load_env
 from searchmux.constants import ENV_API_KEY
 
 HERE = Path(__file__).parent
@@ -88,6 +89,7 @@ def summarize(findings: dict) -> str:
 def main() -> None:
     """Run the agent, then print what it cost."""
     logging.basicConfig(level=logging.WARNING)
+    load_env()
     live = bool(os.getenv(ENV_API_KEY))
 
     # budget=8 is a hard ceiling: four questions asked twice. The

@@ -22,7 +22,8 @@ from pathlib import Path
 
 from searchmux.catalog import load_catalog
 from searchmux.constants import ENV_ANTHROPIC_KEY
-from searchmux.router import DECISION_SCHEMA, Router
+from searchmux.envfile import load_env
+from searchmux.router import ENGINE_ONLY_SCHEMA, Router
 
 logger = logging.getLogger(__name__)
 
@@ -120,7 +121,7 @@ def _baseline_predictor(llm: object) -> Callable[[str], str]:
     def predict(intent: str) -> str:
         decision = llm.complete(
             _BASELINE_PROMPT.format(intent=intent, engines=listing),
-            DECISION_SCHEMA,
+            ENGINE_ONLY_SCHEMA,
         )
         return decision.get("engine_id", "")
 
@@ -144,6 +145,7 @@ def _format_table(rows: list[dict]) -> str:
 def main() -> None:
     """Score every available arm and print a markdown table."""
     logging.basicConfig(level=logging.WARNING)
+    load_env()
     cases = load_cases(CASES_PATH)
     rows = []
 

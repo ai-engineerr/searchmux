@@ -19,13 +19,22 @@ from searchmux.models import RoutingError
 
 logger = logging.getLogger(__name__)
 
-DECISION_SCHEMA = {
+# Structured outputs require every object schema to be closed, so an
+# open `params` map is not expressible. The router therefore builds a
+# schema per request from the candidates' own parameters: the model can
+# only name parameters that actually exist.
+ENGINE_ONLY_SCHEMA = {
     "type": "object",
-    "properties": {
-        "engine_id": {"type": "string"},
-        "params": {"type": "object"},
-    },
-    "required": ["engine_id", "params"],
+    "properties": {"engine_id": {"type": "string"}},
+    "required": ["engine_id"],
+    "additionalProperties": False,
+}
+
+_JSON_TYPES = {
+    "string": "string",
+    "integer": "integer",
+    "number": "number",
+    "boolean": "boolean",
 }
 
 _PROMPT = """\
@@ -100,8 +109,9 @@ class Router:
                 required parameters are still missing after one repair.
         """
         candidates = self.retrieve(intent)
+        schema = self._decision_schema(candidates)
         decision = self._llm.complete(
-            self._build_prompt(intent, candidates, ""), DECISION_SCHEMA
+            self._build_prompt(intent, candidates, ""), schema
         )
 
         try:
@@ -114,9 +124,43 @@ class Router:
             )
             retry = self._llm.complete(
                 self._build_prompt(intent, candidates, correction),
-                DECISION_SCHEMA,
+                schema,
             )
             return self._validate(retry)
+
+    def _decision_schema(self, candidates: list[str]) -> dict:
+        """Build a closed output schema for one candidate set.
+
+        Every object level is closed, which structured outputs require,
+        and `engine_id` is an enum over the candidates while `params`
+        admits only parameter names those candidates actually declare.
+        The model therefore cannot invent either one.
+
+        Args:
+            candidates: Engine ids surviving retrieval.
+
+        Returns:
+            A JSON schema for the routing decision.
+        """
+        properties: dict = {}
+        for engine_id in candidates:
+            for name, spec in self._catalog[engine_id].params.items():
+                json_type = _JSON_TYPES.get(spec.get("type", ""), "string")
+                properties.setdefault(name, {"type": json_type})
+
+        return {
+            "type": "object",
+            "properties": {
+                "engine_id": {"type": "string", "enum": list(candidates)},
+                "params": {
+                    "type": "object",
+                    "properties": properties,
+                    "additionalProperties": False,
+                },
+            },
+            "required": ["engine_id", "params"],
+            "additionalProperties": False,
+        }
 
     def _build_prompt(
         self,
