@@ -29,13 +29,20 @@ class CatalogError(SearchMuxError):
 
 @dataclass(frozen=True, slots=True)
 class Money:
-    """A price with its currency."""
+    """A price, with its currency when the engine reports one.
+
+    currency is None when the engine did not say. SerpApi frequently
+    leaves the field null and puts a symbol in the price text instead,
+    and guessing a code there would misreport money.
+    """
 
     amount: float
-    currency: str
+    currency: str | None = None
 
     def __str__(self) -> str:
-        """Return the amount formatted with its currency code."""
+        """Return the amount, prefixed by its currency when known."""
+        if not self.currency:
+            return f"{self.amount:.2f}"
         return f"{self.currency} {self.amount:.2f}"
 
 

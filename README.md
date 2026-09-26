@@ -102,15 +102,16 @@ python examples/pixel_agent.py
 ```
 
 ```
-offline mode: replaying the synthetic demo cassette
+offline mode: replaying the demo cassette
 
 prices    3 results
-          - Google Pixel 10 (128GB, Obsidian)  [INR 79999.00]
-news      2 results
-reviews   2 results
+          - Google Pixel 10 5G (Obsidian, 12GB RAM, 256GB Storage)  [₹ 67400.00]
+          - Google Pixel 10 5G  [₹ 74999.00]
+news      3 results
+reviews   3 results
 trend     3 results
 
-recommendation: cheapest 71,499 INR, spread 18,500, interest cooling -> wait
+recommendation: cheapest 67,400 ₹, spread 7,599, interest steady -> wait
 cost: {'credits_used': 0, 'remaining': 8, 'by_engine': {}, 'cache_hits': 4}
 ```
 
@@ -167,7 +168,7 @@ Stated plainly rather than discovered later:
 - **24 engines, not 100+.** The remaining engines are additive JSON records; the routing and pipeline work is engine-agnostic.
 - **`google_play` is deliberately not catalogued.** Its results nest as `organic_results[].items[]`, a list of lists that a flat results path cannot express. Listing an engine that silently returns nothing is worse than not listing it.
 - **`google_trends` returns timeline entries, not links.** It is a time series, so `Result.title` carries the date and the values live in `Result.raw`.
-- **`examples/demo_cassette.json` is a hand-written synthetic fixture, not a real capture.** It exists so the demo runs on a fresh clone with no key. Record a real one with `SearchMux.record()`; the format is identical.
+- **`examples/demo_cassette.json` is a real SerpApi capture**, trimmed to the first 3 results per engine and the fields the normalizer reads, with no credentials or search ids retained. `python examples/pixel_agent.py --offline` forces the free replay path even when a key is present.
 - **CrewAI and LlamaIndex** consume the emitted JSON-schema tool definition and should work by construction, but only the schema shape is tested here — treat them as unverified rather than supported.
 
 ---

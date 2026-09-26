@@ -60,18 +60,46 @@ def _build_result(engine: Engine, item: dict) -> Result | None:
 
 
 def _build_money(mapping: dict, item: dict) -> Money | None:
-    """Return a Money when the engine maps a price field."""
+    """Return a Money when the engine maps a price field.
+
+    The currency code is used when the engine supplies one. SerpApi
+    often reports it as null and carries a symbol in the price text, so
+    that is the fallback. Nothing is ever invented: an unknown currency
+    stays None rather than becoming a plausible-looking wrong code.
+    """
     amount = item.get(mapping.get("price", "__absent__"))
     if amount is None:
         return None
-    try:
-        return Money(
-            amount=float(amount),
-            currency=str(item.get(mapping.get("currency"), "") or "USD"),
+
+    currency = item.get(mapping.get("currency", "__absent__"))
+    if not currency:
+        currency = _currency_from_text(
+            item.get(mapping.get("price_text", "__absent__"))
         )
+
+    try:
+        return Money(amount=float(amount), currency=currency or None)
     except (TypeError, ValueError):
         logger.debug("unparseable price %r", amount)
         return None
+
+
+def _currency_from_text(text: object) -> str | None:
+    """Pull a currency symbol or code out of a formatted price.
+
+    Args:
+        text: A price string such as "₹70,000" or "1 299 kr".
+
+    Returns:
+        The non-numeric part, or None when there is nothing usable.
+    """
+    if not isinstance(text, str):
+        return None
+    stripped = "".join(
+        char for char in text
+        if not char.isdigit() and char not in ".,  "
+    ).strip()
+    return stripped or None
 
 
 def _build_extra(mapping: dict, item: dict) -> dict:

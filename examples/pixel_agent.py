@@ -7,7 +7,8 @@ its own response envelope. SearchMux gives them one shape and one budget.
 
 Run it:
 
-    python examples/pixel_agent.py
+    python examples/pixel_agent.py              # live if a key is set
+    python examples/pixel_agent.py --offline    # always free
 
 With no SERPAPI_API_KEY set it replays ``demo_cassette.json`` and costs
 nothing. That cassette is a hand-written synthetic fixture, not a real
@@ -17,6 +18,7 @@ it runs live and records a real cassette to ``recorded.json``.
 
 import logging
 import os
+import sys
 from pathlib import Path
 
 from searchmux import SearchMux
@@ -65,7 +67,10 @@ def summarize(findings: dict) -> str:
     Returns:
         A one-line recommendation.
     """
-    prices = [r.price.amount for r in findings["prices"] if r.price]
+    priced = [r for r in findings["prices"] if r.price]
+    prices = [r.price.amount for r in priced]
+    # Report the currency the engine actually gave us, not a guess.
+    currency = priced[0].price.currency if priced else None
     trend = [
         item.raw.get("values", [{}])[0].get("value")
         for item in findings["trend"]
@@ -80,17 +85,24 @@ def summarize(findings: dict) -> str:
     cooling = len(trend) >= 2 and trend[-1] < max(trend)
 
     verdict = "wait" if cooling or spread > 0.1 * cheapest else "buy now"
+    unit = f" {currency}" if currency else ""
     return (
-        f"cheapest {cheapest:,.0f} INR, spread {spread:,.0f}, "
+        f"cheapest {cheapest:,.0f}{unit}, spread {spread:,.0f}, "
         f"interest {'cooling' if cooling else 'steady'} -> {verdict}"
     )
 
 
 def main() -> None:
     """Run the agent, then print what it cost."""
+    # Result titles carry typographic spaces and dashes that a
+    # cp1252 Windows console cannot encode; replace rather than
+    # crash on someone else's machine.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     logging.basicConfig(level=logging.WARNING)
     load_env()
-    live = bool(os.getenv(ENV_API_KEY))
+    offline = "--offline" in sys.argv
+    live = bool(os.getenv(ENV_API_KEY)) and not offline
 
     # budget=8 is a hard ceiling: four questions asked twice. The
     # second pass comes from cache, so it spends nothing - that gap

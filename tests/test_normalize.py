@@ -86,3 +86,60 @@ def test_partially_present_nested_path_returns_empty_list() -> None:
 def test_non_dict_along_the_path_returns_empty_list() -> None:
     body = {"interest_over_time": "unexpected string"}
     assert normalize("google_trends", body) == []
+
+
+def test_currency_symbol_is_recovered_from_price_text() -> None:
+    """SerpApi reports currency as null and puts the symbol in price."""
+    body = {
+        "shopping_results": [
+            {
+                "title": "Pixel 10",
+                "product_link": "https://x.test/p",
+                "price": "₹67,400",
+                "extracted_price": 67400,
+                "currency": None,
+                "source": "Amazon.in",
+            }
+        ]
+    }
+    result = normalize("google_shopping", body)[0]
+    assert result.price is not None
+    assert result.price.amount == 67400.0
+    assert result.price.currency == "₹"
+    assert str(result.price) == "₹ 67400.00"
+
+
+def test_explicit_currency_code_wins_over_the_symbol() -> None:
+    body = {
+        "shopping_results": [
+            {
+                "title": "Pixel 10",
+                "price": "₹67,400",
+                "extracted_price": 67400,
+                "currency": "INR",
+            }
+        ]
+    }
+    assert normalize("google_shopping", body)[0].price.currency == "INR"
+
+
+def test_unknown_currency_is_never_invented() -> None:
+    """Defaulting to USD would misreport money. It must stay None."""
+    body = {
+        "shopping_results": [
+            {"title": "Thing", "extracted_price": 1200}
+        ]
+    }
+    price = normalize("google_shopping", body)[0].price
+    assert price is not None
+    assert price.currency is None
+    assert str(price) == "1200.00"
+
+
+def test_trailing_currency_code_is_recovered() -> None:
+    body = {
+        "shopping_results": [
+            {"title": "T", "price": "1 299 kr", "extracted_price": 1299}
+        ]
+    }
+    assert normalize("google_shopping", body)[0].price.currency == "kr"

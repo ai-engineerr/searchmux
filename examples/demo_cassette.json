@@ -1,91 +1,154 @@
 {
   "version": 1,
-  "note": "SYNTHETIC FIXTURE - not a real SerpApi capture. Hand-written so examples/pixel_agent.py runs offline with no API key. Record a real cassette with SearchMux.record() against a live key; the format is identical.",
+  "note": "Real SerpApi capture, recorded with SearchMux.record() then trimmed to the first 3 results per engine and the fields normalize() reads. No credentials or search ids retained.",
   "entries": [
     {
       "engine_id": "google_shopping",
-      "params": { "q": "Pixel 10 price India", "gl": "in" },
+      "params": {
+        "q": "Pixel 10 price India",
+        "gl": "in"
+      },
       "body": {
         "shopping_results": [
           {
             "position": 1,
-            "title": "Google Pixel 10 (128GB, Obsidian)",
-            "product_link": "https://example.test/pixel-10-128",
-            "extracted_price": 79999.0,
-            "currency": "INR",
-            "source": "ExampleRetailerA",
-            "snippet": "128GB, 12GB RAM, dual rear camera"
+            "title": "Google Pixel 10 5G (Obsidian, 12GB RAM, 256GB Storage)",
+            "product_link": "https://www.google.com/search?ibp=oshop&q=Pixel 10 price India&prds=catalogid:5118240883799303848,productid:2396409361528415757,headlineOfferDocid:15128575865665749923,imageDocid:3191872885821384734,pvt:hg&hl=en&gl=in&udm=28",
+            "source": "Amazon.in",
+            "price": "₹67,400",
+            "extracted_price": 67400
           },
           {
             "position": 2,
-            "title": "Google Pixel 10 (256GB, Porcelain)",
-            "product_link": "https://example.test/pixel-10-256",
-            "extracted_price": 89999.0,
-            "currency": "INR",
-            "source": "ExampleRetailerB",
-            "snippet": "256GB, 12GB RAM"
+            "title": "Google Pixel 10 5G",
+            "product_link": "https://www.google.com/search?ibp=oshop&q=Pixel 10 price India&prds=catalogid:8775764003197385048,productid:17791449402335358907,headlineOfferDocid:6652749727712968162,imageDocid:17364289115019416973,rds:PC_2463365758140163659|PROD_PC_2463365758140163659,gpcid:2463365758140163659,pvt:hg&hl=en&gl=in&udm=28",
+            "source": "Google Store",
+            "price": "₹74,999",
+            "extracted_price": 74999
           },
           {
             "position": 3,
-            "title": "Google Pixel 10 (128GB, open box)",
-            "product_link": "https://example.test/pixel-10-openbox",
-            "extracted_price": 71499.0,
-            "currency": "INR",
-            "source": "ExampleRetailerC",
-            "snippet": "Open box, 6 month warranty"
+            "title": "Google Pixel 10 5G",
+            "product_link": "https://www.google.com/search?ibp=oshop&q=Pixel 10 price India&prds=catalogid:4423259422367589026,productid:8003047590038467011,headlineOfferDocid:5529123543473141074,imageDocid:10277821388246747404,rds:PC_14592154602830272557|PROD_PC_14592154602830272557,gpcid:8362605084183938464,pvt:hg&hl=en&gl=in&udm=28",
+            "source": "Google Store",
+            "price": "₹74,999",
+            "extracted_price": 74999
           }
         ]
       }
     },
     {
       "engine_id": "google_news",
-      "params": { "q": "Pixel 10 price drop" },
+      "params": {
+        "q": "Pixel 10 price drop"
+      },
       "body": {
         "news_results": [
           {
             "position": 1,
-            "title": "Pixel 10 discounts expected around festive sales",
-            "link": "https://example.test/news/festive-pixel",
-            "snippet": "Retailers historically cut flagship prices in the festive window."
+            "title": "Will the Google Pixel 10 get cheaper when the Pixel 11 launches?",
+            "source": {
+              "name": "Android Central",
+              "icon": "https://encrypted-tbn1.gstatic.com/faviconV2?url=https://www.androidcentral.com&client=NEWS_360&size=96&type=FAVICON&fallback_opts=TYPE,SIZE,URL",
+              "authors": [
+                "Patrick Farmer"
+              ]
+            },
+            "link": "https://www.androidcentral.com/phones/google-pixel/will-the-google-pixel-10-get-cheaper-when-the-pixel-11-launches",
+            "date": "07/17/2026, 07:00 AM, +0000 UTC"
           },
           {
             "position": 2,
-            "title": "Google confirms Pixel 10a for next quarter",
-            "link": "https://example.test/news/pixel-10a",
-            "snippet": "A cheaper variant is scheduled, which typically softens current pricing."
+            "title": "Still live: Google Pixel 10 Pro now $300 off + more from $599, Pixel Watch 4 at $100 off",
+            "source": {
+              "name": "9to5Toys",
+              "icon": "https://encrypted-tbn0.gstatic.com/faviconV2?url=https://9to5toys.com&client=NEWS_360&size=96&type=FAVICON&fallback_opts=TYPE,SIZE,URL",
+              "authors": [
+                "Justin Kahn"
+              ]
+            },
+            "link": "https://9to5toys.com/2026/07/24/google-pixel-10-pro-watch-4-deals/",
+            "date": "07/24/2026, 07:00 AM, +0000 UTC"
+          },
+          {
+            "position": 3,
+            "title": "Amazon just cut $300 off the Google Pixel 10 Pro – and I’d recommend buying one",
+            "source": {
+              "name": "ZDNET",
+              "icon": "https://encrypted-tbn3.gstatic.com/faviconV2?url=https://www.zdnet.com&client=NEWS_360&size=96&type=FAVICON&fallback_opts=TYPE,SIZE,URL",
+              "authors": [
+                "Cesar Cadenas"
+              ]
+            },
+            "link": "https://www.zdnet.com/article/google-pixel-10-pro-deal/",
+            "date": "07/16/2026, 07:00 AM, +0000 UTC"
           }
         ]
       }
     },
     {
       "engine_id": "youtube",
-      "params": { "search_query": "Pixel 10 review" },
+      "params": {
+        "search_query": "Pixel 10 review"
+      },
       "body": {
         "video_results": [
           {
-            "position": 1,
-            "title": "Pixel 10 review: three months later",
-            "link": "https://example.test/watch/abc123",
-            "snippet": "Long-term battery and camera notes."
+            "title": "Pixel 10/Pro Review: Good News and Bad News!",
+            "link": "https://www.youtube.com/watch?v=i63u-iAnhuk"
           },
           {
-            "position": 2,
-            "title": "Pixel 10 vs Pixel 9a: worth the jump?",
-            "link": "https://example.test/watch/def456",
-            "snippet": "Side by side comparison."
+            "title": "Bro, I'm begging you: Don't buy the Pixel 10",
+            "link": "https://www.youtube.com/watch?v=lJqZF_fNIIE"
+          },
+          {
+            "title": "Google Pixel 10 full review",
+            "link": "https://www.youtube.com/watch?v=vjqpyhUKaR8"
           }
         ]
       }
     },
     {
       "engine_id": "google_trends",
-      "params": { "q": "Pixel 10" },
+      "params": {
+        "q": "Pixel 10"
+      },
       "body": {
         "interest_over_time": {
           "timeline_data": [
-            { "date": "Jul 2026", "values": [{ "value": 44 }] },
-            { "date": "Aug 2026", "values": [{ "value": 71 }] },
-            { "date": "Sep 2026", "values": [{ "value": 58 }] }
+            {
+              "date": "Sep 21 – 27, 2025",
+              "values": [
+                {
+                  "query": "Pixel 10",
+                  "query_index": 0,
+                  "value": "97",
+                  "extracted_value": 97
+                }
+              ]
+            },
+            {
+              "date": "Sep 28 – Oct 4, 2025",
+              "values": [
+                {
+                  "query": "Pixel 10",
+                  "query_index": 0,
+                  "value": "89",
+                  "extracted_value": 89
+                }
+              ]
+            },
+            {
+              "date": "Oct 5 – 11, 2025",
+              "values": [
+                {
+                  "query": "Pixel 10",
+                  "query_index": 0,
+                  "value": "83",
+                  "extracted_value": 83
+                }
+              ]
+            }
           ]
         }
       }

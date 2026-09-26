@@ -70,7 +70,8 @@
       "position": "position",
       "price": "extracted_price",
       "currency": "currency",
-      "source": "source"
+      "source": "source",
+      "price_text": "price"
     },
     "ttl_class": "volatile"
   },
@@ -460,7 +461,8 @@
       "snippet": "stock",
       "position": "position",
       "price": "extracted_price",
-      "currency": "currency"
+      "currency": "currency",
+      "price_text": "price"
     },
     "ttl_class": "volatile"
   },
