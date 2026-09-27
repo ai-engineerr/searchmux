@@ -1,6 +1,6 @@
 # SearchMux Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **Historical record.** This is the task-by-task plan the v0.1.0 build was executed from, kept for transparency about how the library was made. It is not a contributor guide — see [CONTRIBUTING.md](../CONTRIBUTING.md) for that, and [DESIGN.md](DESIGN.md) for the design it implements.
 
 **Goal:** Ship a Python library that routes plain-language search intent to the right one of SerpApi's 100+ engines, caches results, guards a credit budget, and makes SerpApi-backed agents testable offline.
 
@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.11+, `httpx`, `pydantic`, `rank-bm25`, `anthropic` (router only), stdlib `sqlite3` for cache.
 
-**Spec:** `docs/superpowers/specs/2026-09-26-searchmux-design.md`
+**Spec:** `docs/DESIGN.md`
 
 ## Global Constraints
 

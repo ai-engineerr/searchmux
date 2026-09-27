@@ -177,6 +177,19 @@ Stated plainly rather than discovered later:
 
 Per the hackathon rules: this project was built with **Claude Code (Claude Opus 5)** used for design, implementation, test authoring, and documentation, including parallel subagents for independent modules and for verifying catalog parameters against SerpApi's published docs. All architectural decisions, the evaluation methodology, and the scope calls documented above were directed by the authors. Every figure in the results table is a real run of `evals/run_eval.py` against the live API, including the one that disproved our own starting thesis. None are estimates.
 
+## Documentation
+
+| Document | What it covers |
+| --- | --- |
+| [docs/API.md](docs/API.md) | Every public class, method and exception |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | How the pipeline fits together, and why each decision was made |
+| [docs/ENGINES.md](docs/ENGINES.md) | All 24 engines, their parameters and cache policy (generated from the catalog) |
+| [docs/DESIGN.md](docs/DESIGN.md) | The original design specification |
+| [docs/IMPLEMENTATION-PLAN.md](docs/IMPLEMENTATION-PLAN.md) | The task-by-task build plan, kept as a record |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Setup, code style, and how to add an engine |
+| [SECURITY.md](SECURITY.md) | How credentials are handled, and how to report an issue |
+| [CHANGELOG.md](CHANGELOG.md) | Release history, including what we got wrong and corrected |
+
 ## Team
 
 Built by **Vikas Sharma** and **Manisha Choudhary** for the SerpApi India Hackathon 2026, in the Open-Source Integrations track.
