@@ -41,9 +41,9 @@ Routing accuracy on [`evals/routing.jsonl`](evals/routing.jsonl) — 50 hand-lab
 | all engine names, no schemas (the `serpapi-mcp` shape) | 50 | 49 | 98% |
 | **SearchMux: all engines + closed schema** | **50** | **49** | **98%** |
 
-### What the numbers actually showed — including where I was wrong
+### What the numbers actually showed — including where we were wrong
 
-My starting thesis was that narrowing 100+ engines down to a handful before the model sees them would beat handing it everything. **On this eval that is false, and the measurement says so plainly.**
+Our starting thesis was that narrowing 100+ engines down to a handful before the model sees them would beat handing it everything. **On this eval that is false, and the measurement says so plainly.**
 
 BM25 narrowing to 5 scored 82% — *exactly* its own retrieval recall@5 of 82%. The model chose correctly from every shortlist it was given; the shortlist was simply missing the right engine 18% of the time. BM25 ranked `ebay` above `google_scholar` for "peer reviewed studies on CRISPR off-target effects". Recall@k measured 52 / 72 / 82 / 86 / 88 / 100% at k = 1 / 3 / 5 / 8 / 12 / 24, so narrowing is a hard ceiling, not a filter.
 
@@ -175,7 +175,11 @@ Stated plainly rather than discovered later:
 
 ## AI tool disclosure
 
-Per the hackathon rules: this project was built with **Claude Code (Claude Opus 5)** used for design, implementation, test authoring, and documentation, including parallel subagents for independent modules and for verifying catalog parameters against SerpApi's published docs. All architectural decisions, the evaluation methodology, and the scope calls documented above were directed by the author. The measured 52% figure is a real run of `evals/run_eval.py`, not an estimate.
+Per the hackathon rules: this project was built with **Claude Code (Claude Opus 5)** used for design, implementation, test authoring, and documentation, including parallel subagents for independent modules and for verifying catalog parameters against SerpApi's published docs. All architectural decisions, the evaluation methodology, and the scope calls documented above were directed by the authors. Every figure in the results table is a real run of `evals/run_eval.py` against the live API, including the one that disproved our own starting thesis. None are estimates.
+
+## Team
+
+Built by **Vikas Sharma** and **Manisha Choudhary** for the SerpApi India Hackathon 2026, in the Open-Source Integrations track.
 
 ## License
 
