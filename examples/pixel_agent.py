@@ -116,7 +116,7 @@ def main() -> None:
             findings = gather(q)
             gather(q)
     else:
-        print("offline mode: replaying the synthetic demo cassette\n")
+        print("offline mode: replaying the recorded demo cassette\n")
         with q.replay(DEMO_CASSETTE):
             findings = gather(q)
             gather(q)
@@ -125,7 +125,7 @@ def main() -> None:
         print(f"{label:9} {len(results)} results")
         for result in results[:2]:
             price = f"  [{result.price}]" if result.price else ""
-            print(f"          - {result.title[:58]}{price}")
+            print(f"          - {result.title[:68]}{price}")
 
     print(f"\nrecommendation: {summarize(findings)}")
     print(f"cost: {q.report()}")
