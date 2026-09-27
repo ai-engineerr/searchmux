@@ -57,7 +57,7 @@ intent: str
 
 ### The catalog is generated, then committed
 
-`catalog.json` is built at build time by `scripts/build_catalog.py` and checked into the repository. Nothing resolves a schema over the network at runtime.
+`catalog.json` is hand-verified against SerpApi's published documentation and checked into the repository. Nothing resolves a schema over the network at runtime.
 
 The library is therefore importable offline, deterministic across machines, and reproducible for anyone reviewing it. Adding an engine is one JSON record and zero lines of code.
 

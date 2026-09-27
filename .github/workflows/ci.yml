@@ -25,6 +25,9 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
 
+      - name: Lint
+        run: python -m ruff check .
+
       # The suite must pass with no SerpApi key. Cassettes make every
       # search path replayable offline; a test that needs the network
       # is a mis-written test, and this job is what proves it.

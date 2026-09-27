@@ -131,16 +131,22 @@ class SearchMux:
         The budget is checked before the request, never after: the
         point is to not spend the credit.
         """
-        if self._cassette is not None:
-            if self._cassette.mode == MODE_REPLAY:
-                return self._cassette.play(engine, params)
+        replaying = (
+            self._cassette is not None
+            and self._cassette.mode == MODE_REPLAY
+        )
+        if replaying:
+            return self._cassette.play(engine, params)
 
         self._budget.spend(engine)
         body = self._require_transport().fetch(engine, params)
 
-        if self._cassette is not None:
-            if self._cassette.mode == MODE_RECORD:
-                self._cassette.capture(engine, params, body)
+        recording = (
+            self._cassette is not None
+            and self._cassette.mode == MODE_RECORD
+        )
+        if recording:
+            self._cassette.capture(engine, params, body)
         return body
 
     def _require_transport(self) -> Transport:

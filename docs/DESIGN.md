@@ -76,7 +76,7 @@ A generated JSON artifact, one record per engine:
 }
 ```
 
-Generated at build time by `scripts/build_catalog.py` and **committed to the repo**. Runtime never performs network I/O to resolve schemas: the library is deterministic, importable offline, and reproducible for judges.
+Hand-verified against SerpApi's documentation and **committed to the repo**. Runtime never performs network I/O to resolve schemas: the library is deterministic, importable offline, and reproducible for judges.
 
 Scope for v1: ~25 engines covering the high-traffic surface (google, and the shopping / news / scholar / maps / flights / hotels / jobs / trends / youtube / patents / images / videos / local families, plus bing, duckduckgo, amazon, ebay, walmart, yelp). Catalog size is a scaling knob, not a blocker; adding an engine is one JSON record and zero code.
 
@@ -215,7 +215,6 @@ searchmux/
   adapters/
     tool.py         JSON-schema tool emission
     mcp_server.py   MCP entry point
-scripts/build_catalog.py
 evals/routing.jsonl
 tests/
 ```

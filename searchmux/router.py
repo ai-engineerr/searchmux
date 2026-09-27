@@ -30,13 +30,6 @@ ENGINE_ONLY_SCHEMA = {
     "additionalProperties": False,
 }
 
-_JSON_TYPES = {
-    "string": "string",
-    "integer": "integer",
-    "number": "number",
-    "boolean": "boolean",
-}
-
 _PROMPT = """\
 Pick the single best search engine for this request and fill in its
 parameters.
@@ -90,7 +83,7 @@ class Router:
         """
         scores = self._index.get_scores(_tokenize(intent))
         ranked = sorted(
-            zip(self.engine_ids, scores),
+            zip(self.engine_ids, scores, strict=True),
             key=lambda pair: (-pair[1], pair[0]),
         )
         if self._top_k is None:

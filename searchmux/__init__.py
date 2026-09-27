@@ -6,10 +6,10 @@ from searchmux.models import (
     CassetteMiss,
     CatalogError,
     Money,
-    SearchMuxAPIError,
-    SearchMuxError,
     Result,
     RoutingError,
+    SearchMuxAPIError,
+    SearchMuxError,
 )
 
 __all__ = [

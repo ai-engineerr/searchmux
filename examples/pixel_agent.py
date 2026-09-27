@@ -23,8 +23,8 @@ import sys
 from pathlib import Path
 
 from searchmux import SearchMux
-from searchmux.envfile import load_env
 from searchmux.constants import ENV_API_KEY
+from searchmux.envfile import load_env
 
 HERE = Path(__file__).parent
 DEMO_CASSETTE = str(HERE / "demo_cassette.json")

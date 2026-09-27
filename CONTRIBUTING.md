@@ -41,10 +41,12 @@ Matching the existing code matters more than personal preference.
 - No hardcoded values — strings, URLs and settings live in `searchmux/constants.py`
 - Secrets come from `os.getenv()` and nowhere else
 
-Check line length before opening a pull request:
+All of this is enforced by `ruff`, configured in `pyproject.toml`, and
+checked in CI. Run it before opening a pull request:
 
 ```bash
-awk 'length>79 {print FILENAME":"FNR": "length}' searchmux/*.py tests/*.py
+python -m ruff check .          # must print "All checks passed!"
+python -m ruff check . --fix    # fixes import order and the easy ones
 ```
 
 ## Tests come first
