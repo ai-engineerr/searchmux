@@ -10,10 +10,11 @@ Run it:
     python examples/pixel_agent.py              # live if a key is set
     python examples/pixel_agent.py --offline    # always free
 
-With no SERPAPI_API_KEY set it replays ``demo_cassette.json`` and costs
-nothing. That cassette is a hand-written synthetic fixture, not a real
-capture — it exists so this demo runs on a fresh clone. With a key set,
-it runs live and records a real cassette to ``recorded.json``.
+With no SERPAPI_API_KEY set, or with --offline, it replays
+``demo_cassette.json`` and costs nothing. That cassette is a real
+capture, trimmed to the fields the normalizer reads, so the demo runs
+on a fresh clone with no account. With a key set it runs live and
+records a fresh cassette to ``recorded.json``.
 """
 
 import logging
