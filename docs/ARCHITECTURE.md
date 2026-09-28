@@ -2,6 +2,8 @@
 
 How SearchMux is put together, and why each piece is shaped the way it is.
 
+**[Open the interactive architecture diagram](searchmux-architecture.html)** — pan, zoom, trace a relationship, switch theme, and step through three guided views (the primary path, what never leaves the process, and the optional routing layer). Generated from this document with [Archify](https://github.com/tt-a1i/archify) and verified against the source files at commit `06e3f7a5`.
+
 For the public API surface see [API.md](API.md). For the engine catalog see [ENGINES.md](ENGINES.md).
 
 ---

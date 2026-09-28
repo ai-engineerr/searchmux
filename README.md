@@ -183,6 +183,7 @@ Per the hackathon rules: this project was built with **Claude Code (Claude Opus 
 | --- | --- |
 | [docs/API.md](docs/API.md) | Every public class, method and exception |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | How the pipeline fits together, and why each decision was made |
+| [docs/searchmux-architecture.html](docs/searchmux-architecture.html) | Interactive runtime architecture diagram — trust boundaries, primary path, guided views |
 | [docs/ENGINES.md](docs/ENGINES.md) | All 24 engines, their parameters and cache policy (generated from the catalog) |
 | [docs/DESIGN.md](docs/DESIGN.md) | The original design specification |
 | [docs/IMPLEMENTATION-PLAN.md](docs/IMPLEMENTATION-PLAN.md) | The task-by-task build plan, kept as a record |
