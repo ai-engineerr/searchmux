@@ -1,5 +1,10 @@
 # SearchMux
 
+[![PyPI](https://img.shields.io/pypi/v/searchmux)](https://pypi.org/project/searchmux/)
+[![Tests](https://github.com/ai-engineerr/searchmux/actions/workflows/ci.yml/badge.svg)](https://github.com/ai-engineerr/searchmux/actions/workflows/ci.yml)
+[![Python versions](https://img.shields.io/pypi/pyversions/searchmux)](https://pypi.org/project/searchmux/)
+[![License](https://img.shields.io/pypi/l/searchmux)](https://github.com/ai-engineerr/searchmux/blob/main/LICENSE)
+
 A Python library — not an app, nothing to open or click — that sits between your AI agent and SerpApi. Ask it something once and it remembers the answer, so your agent never pays for the same search twice.
 
 *A multiplexer routes one input to the right line among many. That is the job: one plain-language question, 100+ search engines, the correct one chosen.*
@@ -133,7 +138,7 @@ cost: {'credits_used': 0, 'remaining': 8, 'by_engine': {}, 'cache_hits': 4}
 
 **Normalized results.** One `Result` dataclass across every engine, with `raw` always attached so nothing is lost. Swapping Bing for DuckDuckGo stops meaning a rewritten parser.
 
-**Drop-in for agents.** `q.as_tool()` emits a JSON-schema tool definition that Anthropic tool use, OpenAI function-calling and LangChain all consume directly. `searchmux-mcp` runs an MCP stdio server exposing a single `find` tool, so an MCP client gets all 24 engines behind one tool instead of a hundred:
+**Drop-in for agents.** `q.as_tool()` emits an Anthropic-shaped tool definition that Anthropic tool use and LangChain's structured tools consume directly; `q.as_openai_tool()` emits the same schema wrapped in OpenAI's function-calling envelope, so the two never drift apart. See [`examples/openai_agent.py`](https://github.com/ai-engineerr/searchmux/blob/main/examples/openai_agent.py) for a real, working tool-calling loop, not just a claim. `searchmux-mcp` runs an MCP stdio server exposing a single `find` tool, so an MCP client gets all 24 engines behind one tool instead of a hundred:
 
 ```bash
 pip install -e ".[mcp,router]"

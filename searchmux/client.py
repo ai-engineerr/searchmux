@@ -11,7 +11,7 @@ import os
 from collections.abc import Iterator
 from contextlib import contextmanager
 
-from searchmux.adapters.tool import tool_schema
+from searchmux.adapters.tool import openai_tool_schema, tool_schema
 from searchmux.budget import Budget
 from searchmux.cache import Cache, request_key
 from searchmux.cassette import MODE_RECORD, MODE_REPLAY, Cassette
@@ -118,12 +118,23 @@ class SearchMux:
         return self.search(engine=engine_id, **{**routed, **params})
 
     def as_tool(self) -> dict:
-        """Return a function-calling schema for this client.
+        """Return an Anthropic-shaped tool-use schema for this client.
+
+        LangChain's structured-tool helpers accept this same shape.
 
         Returns:
-            A schema accepted by Anthropic, OpenAI, and LangChain.
+            A schema accepted by Anthropic tool use and LangChain.
         """
         return tool_schema()
+
+    def as_openai_tool(self) -> dict:
+        """Return an OpenAI function-calling schema for this client.
+
+        Returns:
+            A dict ready to pass directly in an OpenAI `tools=[...]`
+            list.
+        """
+        return openai_tool_schema()
 
     def _fetch(self, engine: str, params: dict) -> dict:
         """Replay, or spend a credit and call SerpApi.

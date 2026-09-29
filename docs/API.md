@@ -86,11 +86,22 @@ A replay miss raises `CassetteMiss`; it never falls through to the network. `api
 
 ### `as_tool() -> dict`
 
-Returns a JSON-schema tool definition for Anthropic tool use, OpenAI function-calling, or LangChain.
+Returns an Anthropic-shaped tool definition. LangChain's structured-tool helpers accept the same flat shape directly.
 
 ```python
 tools = [q.as_tool()]
 ```
+
+### `as_openai_tool() -> dict`
+
+Returns the same schema wrapped in OpenAI's function-calling envelope (`{"type": "function", "function": {...}}`), since OpenAI expects a different shape than Anthropic's `input_schema`. Built from `as_tool()` internally, so the two can't drift apart.
+
+```python
+tools = [q.as_openai_tool()]
+response = openai_client.chat.completions.create(model="gpt-4.1-mini", messages=messages, tools=tools)
+```
+
+See [`examples/openai_agent.py`](../examples/openai_agent.py) for a complete working loop.
 
 ---
 
