@@ -6,6 +6,18 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 Nothing yet.
 
+## [0.1.5] — 2026-09-29
+
+### Added
+
+- `as_openai_tool()`, wrapping the existing schema in OpenAI's
+  function-calling envelope. `as_tool()` was documented as
+  OpenAI-compatible but returned Anthropic's flat shape, which OpenAI
+  rejects.
+- `examples/openai_agent.py`, a real tool-calling loop verified
+  against a mocked OpenAI client.
+- PyPI, CI, and license badges in the README.
+
 ## [0.1.4] — 2026-09-29
 
 ### Changed
@@ -87,7 +99,8 @@ Recorded because the reasoning matters more than the result.
 - The demo crashed on Windows consoles when a result title contained a typographic space.
 - The secret scanner walked the filesystem instead of asking git which files are tracked, flagging local recordings that were never going to be published.
 
-[Unreleased]: https://github.com/ai-engineerr/searchmux/compare/v0.1.4...HEAD
+[Unreleased]: https://github.com/ai-engineerr/searchmux/compare/v0.1.5...HEAD
+[0.1.5]: https://github.com/ai-engineerr/searchmux/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/ai-engineerr/searchmux/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/ai-engineerr/searchmux/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/ai-engineerr/searchmux/compare/v0.1.1...v0.1.2
