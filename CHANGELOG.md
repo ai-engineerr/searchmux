@@ -6,6 +6,12 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 Nothing yet.
 
+## [0.1.2] — 2026-09-29
+
+### Changed
+
+- Team names in the README now link to LinkedIn profiles.
+
 ## [0.1.1] — 2026-09-29
 
 ### Fixed
@@ -65,6 +71,7 @@ Recorded because the reasoning matters more than the result.
 - The demo crashed on Windows consoles when a result title contained a typographic space.
 - The secret scanner walked the filesystem instead of asking git which files are tracked, flagging local recordings that were never going to be published.
 
-[Unreleased]: https://github.com/ai-engineerr/searchmux/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/ai-engineerr/searchmux/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/ai-engineerr/searchmux/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/ai-engineerr/searchmux/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/ai-engineerr/searchmux/releases/tag/v0.1.0
