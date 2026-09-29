@@ -195,7 +195,7 @@ Per the hackathon rules: this project was built with **Claude Code (Claude Opus 
 
 ## Team
 
-Built by **Vikas Sharma** and **Manisha Choudhary**.
+Built by **[Vikas Sharma](https://www.linkedin.com/in/vikas-sharma005/)** and **[Manisha Choudhary](https://www.linkedin.com/in/mani-shaa/)**.
 
 ## License
 
