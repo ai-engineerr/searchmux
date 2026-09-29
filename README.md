@@ -1,5 +1,7 @@
 # SearchMux
 
+**In plain terms:** a Python library — not an app, nothing to open or click — that sits between your AI agent and SerpApi. Ask it something once and it remembers the answer, so your agent never pays for the same search twice.
+
 *A multiplexer routes one input to the right line among many. That is the job: one plain-language question, 100+ search engines, the correct one chosen.*
 
 **The search layer for AI agents over SerpApi.** Describe what you want to know; SearchMux picks the right engine, caches the answer, meters the spend, and makes the whole thing testable offline.
