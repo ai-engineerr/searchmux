@@ -30,7 +30,7 @@ SearchMux is the layer underneath all three.
 
 ## Measured results
 
-Routing accuracy on [`evals/routing.jsonl`](evals/routing.jsonl) — 50 hand-labelled intents spanning every catalogued engine, phrased the way a user would phrase them, never naming the engine. Cases where the ambiguity is genuine (a plain web question really could go to Google, Bing, or DuckDuckGo) accept any of the reasonable engines; forcing one answer would measure the label rather than the router.
+Routing accuracy on [`evals/routing.jsonl`](https://github.com/ai-engineerr/searchmux/blob/main/evals/routing.jsonl) — 50 hand-labelled intents spanning every catalogued engine, phrased the way a user would phrase them, never naming the engine. Cases where the ambiguity is genuine (a plain web question really could go to Google, Bing, or DuckDuckGo) accept any of the reasonable engines; forcing one answer would measure the label rather than the router.
 
 | arm | n | correct | accuracy |
 | --- | --- | --- | --- |
@@ -66,9 +66,11 @@ The two LLM arms cost money to run, so they are not pre-baked here — set `ANTH
 ## Install
 
 ```bash
-pip install -e .
+pip install searchmux
 cp .env.example .env     # add your SerpApi key, or don't — see below
 ```
+
+For local development, clone and install editable instead: `pip install -e .`
 
 Python 3.11+. Core dependencies are `httpx`, `pydantic`, and `rank-bm25`. The `anthropic` SDK is needed only for intent routing.
 
@@ -181,20 +183,20 @@ Per the hackathon rules: this project was built with **Claude Code (Claude Opus 
 
 | Document | What it covers |
 | --- | --- |
-| [docs/API.md](docs/API.md) | Every public class, method and exception |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | How the pipeline fits together, and why each decision was made |
-| [docs/searchmux-architecture.html](docs/searchmux-architecture.html) | Interactive runtime architecture diagram — trust boundaries, primary path, guided views |
-| [docs/ENGINES.md](docs/ENGINES.md) | All 24 engines, their parameters and cache policy (generated from the catalog) |
-| [docs/DESIGN.md](docs/DESIGN.md) | The original design specification |
-| [docs/IMPLEMENTATION-PLAN.md](docs/IMPLEMENTATION-PLAN.md) | The task-by-task build plan, kept as a record |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Setup, code style, and how to add an engine |
-| [SECURITY.md](SECURITY.md) | How credentials are handled, and how to report an issue |
-| [CHANGELOG.md](CHANGELOG.md) | Release history, including what we got wrong and corrected |
+| [docs/API.md](https://github.com/ai-engineerr/searchmux/blob/main/docs/API.md) | Every public class, method and exception |
+| [docs/ARCHITECTURE.md](https://github.com/ai-engineerr/searchmux/blob/main/docs/ARCHITECTURE.md) | How the pipeline fits together, and why each decision was made |
+| [docs/searchmux-architecture.html](https://htmlpreview.github.io/?https://github.com/ai-engineerr/searchmux/blob/main/docs/searchmux-architecture.html) | Interactive runtime architecture diagram — trust boundaries, primary path, guided views |
+| [docs/ENGINES.md](https://github.com/ai-engineerr/searchmux/blob/main/docs/ENGINES.md) | All 24 engines, their parameters and cache policy (generated from the catalog) |
+| [docs/DESIGN.md](https://github.com/ai-engineerr/searchmux/blob/main/docs/DESIGN.md) | The original design specification |
+| [docs/IMPLEMENTATION-PLAN.md](https://github.com/ai-engineerr/searchmux/blob/main/docs/IMPLEMENTATION-PLAN.md) | The task-by-task build plan, kept as a record |
+| [CONTRIBUTING.md](https://github.com/ai-engineerr/searchmux/blob/main/CONTRIBUTING.md) | Setup, code style, and how to add an engine |
+| [SECURITY.md](https://github.com/ai-engineerr/searchmux/blob/main/SECURITY.md) | How credentials are handled, and how to report an issue |
+| [CHANGELOG.md](https://github.com/ai-engineerr/searchmux/blob/main/CHANGELOG.md) | Release history, including what we got wrong and corrected |
 
 ## Team
 
-Built by **Vikas Sharma** and **Manisha Choudhary** for the SerpApi India Hackathon 2026, in the Open-Source Integrations track.
+Built by **Vikas Sharma** and **Manisha Choudhary**.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](https://github.com/ai-engineerr/searchmux/blob/main/LICENSE).

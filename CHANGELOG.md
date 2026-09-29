@@ -6,6 +6,18 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 Nothing yet.
 
+## [0.1.1] — 2026-09-29
+
+### Fixed
+
+- README links to `docs/*.md` and other repo files were relative
+  paths, which resolve on GitHub but 404 on PyPI, where the README is
+  served from the project page rather than the repo root. All doc
+  links are now absolute GitHub URLs; the interactive architecture
+  diagram links through htmlpreview.github.io since GitHub's own
+  `blob` view shows HTML as source rather than rendering it.
+- Removed the hackathon/track line from the PyPI-facing description.
+
 ## [0.1.0] — 2026-09-27
 
 First release. Built for the SerpApi India Hackathon 2026.
@@ -53,5 +65,6 @@ Recorded because the reasoning matters more than the result.
 - The demo crashed on Windows consoles when a result title contained a typographic space.
 - The secret scanner walked the filesystem instead of asking git which files are tracked, flagging local recordings that were never going to be published.
 
-[Unreleased]: https://github.com/ai-engineerr/searchmux/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/ai-engineerr/searchmux/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/ai-engineerr/searchmux/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/ai-engineerr/searchmux/releases/tag/v0.1.0
