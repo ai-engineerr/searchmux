@@ -13,11 +13,27 @@ authors = [
     { name = "Manisha Choudhary" },
 ]
 license = { text = "MIT" }
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
 dependencies = [
     "httpx>=0.27",
     "pydantic>=2.7",
     "rank-bm25>=0.2.2",
 ]
+
+[project.urls]
+Homepage = "https://github.com/ai-engineerr/searchmux"
+Repository = "https://github.com/ai-engineerr/searchmux"
+Issues = "https://github.com/ai-engineerr/searchmux/issues"
+Changelog = "https://github.com/ai-engineerr/searchmux/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 router = ["anthropic>=1.8"]
