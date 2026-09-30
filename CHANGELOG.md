@@ -40,11 +40,21 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 - `python -m evals.provider_eval`, a head-to-head of SerpApi's
   `google`, Tavily's `tavily_search`, and Exa's `exa_search` on 15
-  general web-search queries (Brave excluded, no key available). All
-  three succeeded on every query. Structural signals only — latency,
-  result count, snippet length — not a relevance judge; see the
-  README's Provider comparison section for the numbers and the
-  caveats.
+  general web-search queries, all three asked for the same 10 results
+  per query. Reports median and p95 latency plus first-attempt vs.
+  after-retry success (not just a mean, after an earlier informal run
+  showed one SerpApi timeout-and-retry could drag the mean far from
+  the median), a cost column using each provider's published list
+  price (checked 2026-09-30, explicitly not account-specific), and an
+  approximate-tokens-returned figure instead of a raw snippet length
+  (fairer across providers, and it's what a downstream LLM call
+  actually pays for). Adds two free relevance signals: domain overlap
+  between providers (Jaccard on result domains) and answer-containment
+  on 8 factual queries with a known answer. Brave is listed with its
+  published price but has no live row — no key available — shown as
+  a pending table row rather than silently omitted. All three tested
+  providers succeeded on every query in this run. See the README's
+  Provider comparison section for the full numbers and caveats.
 
 ## [0.2.0] — 2026-09-30
 

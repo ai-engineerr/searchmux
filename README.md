@@ -72,17 +72,25 @@ The two LLM arms cost money to run, so they are not pre-baked here — set `ANTH
 
 ### Provider comparison
 
-Head-to-head on 15 general web-search queries, run live against SerpApi's `google` engine, Tavily's `tavily_search`, and Exa's `exa_search` — Brave excluded, no key available. This is a first, deliberately small pass (15 queries, not the 100+ a full study would use), and it measures structural signals — did anything come back, how fast, how many results, how much text per result — not which answer was actually *better*. That needs a human or an LLM judge and its own budget, which this pass doesn't spend. Treat it as a starting data point, not a verdict.
+Head-to-head on 15 general web-search queries, run live against SerpApi's `google` engine, Tavily's `tavily_search`, and Exa's `exa_search`, all three asked for the same 10 results per query so `avg results` reflects the provider rather than an accidental default. Run started 2026-09-30T08:55:15 UTC, one snapshot from one network location — latency numbers will move around on a different run or a different network, which is exactly why median and p95 are reported instead of a bare mean.
 
-| provider | n | success | avg latency | avg results | avg snippet chars |
-| --- | --- | --- | --- | --- | --- |
-| serpapi | 15 | 100% | 7992 ms | 7.9 | 144 |
-| tavily | 15 | 100% | 1581 ms | 9.5 | 1194 |
-| exa | 15 | 100% | 1970 ms | 9.8 | 498 |
+| provider | n | success | 1st-attempt | median latency | p95 latency | avg results | approx tokens returned | list cost/request | total list cost |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| serpapi | 15 | 100% | 100% | 501 ms | 584 ms | 7.9 | 285 | $0.0150 | $0.225 |
+| tavily | 15 | 100% | 100% | 1357 ms | 2349 ms | 9.6 | 2895 | $0.0080 | $0.120 |
+| exa | 15 | 100% | 100% | 305 ms | 342 ms | 9.8 | 1223 | $0.0070 | $0.105 |
+| brave | — | **pending** — no API key available | | | | | | $0.0050 | — |
 
-All three answered every query. SerpApi was markedly slower on this run (one query hit a timeout and retried, which pulls its average up — that's a real cost of the general-purpose `google` engine, not a fluke to explain away). Tavily's snippets are roughly 8x longer than SerpApi's on average — it returns cleaned page content, not a search-result snippet. Exa's average sits right at its own 500-character cap (`contents.text.maxCharacters`, set in `ExaBackend` to bound context-window cost), confirming that cap is doing what it's supposed to.
+**Cost** is each provider's published *list price per request*, checked 2026-09-30 (SerpApi's Developer plan, $75/mo for 5,000 searches; Tavily's pay-as-you-go rate; Exa's base search endpoint; Brave's Search plan) — not necessarily your account's actual rate, the same reason `SearchMux`'s own `budget_usd` ships no default prices. **Approx tokens returned** replaces a raw snippet-character count: it's `len(text) // 4` across every result's snippet, a rough proxy for what an agent's downstream LLM call actually pays to read, which is the number this project's cost story cares about. Tavily returns cleaned page content (long); Exa's snippets are deliberately capped at 500 characters (`contents.text.maxCharacters` in `ExaBackend`, to bound exactly this cost) — SerpApi returns a short native search snippet. **1st-attempt** separates "succeeded straight away" from "succeeded after a retry" — all three hit 100% on this run, but an earlier informal pass saw SerpApi hit a timeout-and-retry that dragged its mean latency to ~8s while barely moving its median; that's the reason this table reports median/p95/1st-attempt instead of a single average. SerpApi does not charge a credit for a server-side cache hit on an identical recent search; none of this run's queries repeat, so that did not affect these numbers either way. **Brave** is listed with its published price for reference but has no live row — no API key has been available — rather than being silently absent from the table.
 
-Reproduce it, real cost on all three providers:
+Two free relevance signals, not a full judge:
+
+- **Domain overlap** — how much each pair of providers agrees on which *sources* exist for the same query, not just that something came back: `serpapi vs tavily 19%`, `serpapi vs exa 3%`, `tavily vs exa 9%`. Low overlap across the board — these three are drawing from meaningfully different parts of the web for the same queries, not converging on the same handful of sites.
+- **Answer-containment** — for 8 factual queries with an unambiguous known answer (a date, a name, a number), whether that answer appears anywhere in the results, checked with a plain word-boundary substring match, no model involved: `serpapi 88%`, `tavily 100%`, `exa 100%`. This is a floor, not a relevance score — a page can contain the right number by coincidence, and an open-ended query has no single string to check for, which is why it's run only on the 8 factual cases in `evals/factual_queries.jsonl`, not the general 15.
+
+An LLM-judge relevance score (rating results 1–5, validated by hand-checking a subset) would be a real next step and is deliberately not run here — it costs its own budget, and this pass didn't have a standing signal on what's acceptable to spend.
+
+Reproduce it, real cost on all three providers (~$0.69 total at these list prices — the 45 general-query calls above plus 24 more for the factual-containment check):
 
 ```bash
 python -m evals.provider_eval
