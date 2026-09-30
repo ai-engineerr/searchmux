@@ -6,10 +6,13 @@ import time
 import httpx
 
 from searchmux.constants import (
+    BRAVE_BASE_URL,
+    EXA_BASE_URL,
     HTTP_BACKOFF_BASE,
     HTTP_MAX_RETRIES,
     HTTP_TIMEOUT,
     SERPAPI_BASE_URL,
+    TAVILY_BASE_URL,
 )
 from searchmux.models import SearchMuxAPIError
 
@@ -119,6 +122,77 @@ class SerpApiBackend(Backend):
     def _build_request(self, engine_id: str, params: dict) -> dict:
         query = {**params, "engine": engine_id, "api_key": self._api_key}
         return {"method": "GET", "url": SERPAPI_BASE_URL, "params": query}
+
+
+class TavilyBackend(Backend):
+    """Performs Tavily HTTP requests.
+
+    POST with a JSON body; auth is a bearer token, not a body field.
+    """
+
+    def __init__(
+        self,
+        api_key: str,
+        client: httpx.Client | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._api_key = api_key
+
+    def _build_request(self, engine_id: str, params: dict) -> dict:
+        return {
+            "method": "POST",
+            "url": TAVILY_BASE_URL,
+            "json": params,
+            "headers": {"Authorization": f"Bearer {self._api_key}"},
+        }
+
+
+class BraveBackend(Backend):
+    """Performs Brave Search HTTP requests.
+
+    GET with query params, closest to SerpApi's own shape; auth is a
+    header, not a query param.
+    """
+
+    def __init__(
+        self,
+        api_key: str,
+        client: httpx.Client | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._api_key = api_key
+
+    def _build_request(self, engine_id: str, params: dict) -> dict:
+        return {
+            "method": "GET",
+            "url": BRAVE_BASE_URL,
+            "params": params,
+            "headers": {"X-Subscription-Token": self._api_key},
+        }
+
+
+class ExaBackend(Backend):
+    """Performs Exa HTTP requests.
+
+    POST with a JSON body; x-api-key is used over the equally valid
+    Authorization: Bearer form, for the simpler single-purpose header.
+    """
+
+    def __init__(
+        self,
+        api_key: str,
+        client: httpx.Client | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._api_key = api_key
+
+    def _build_request(self, engine_id: str, params: dict) -> dict:
+        return {
+            "method": "POST",
+            "url": EXA_BASE_URL,
+            "json": params,
+            "headers": {"x-api-key": self._api_key},
+        }
 
 
 # Backward-compat: existing code and tests import Transport directly.
