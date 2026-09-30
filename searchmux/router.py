@@ -51,6 +51,7 @@ class Router:
         self,
         llm: object | None = None,
         top_k: int | None = DEFAULT_ROUTER_TOP_K,
+        providers: set[str] | None = None,
     ) -> None:
         """Build the router and its retrieval index.
 
@@ -58,10 +59,21 @@ class Router:
             llm: Anything with complete(prompt, schema) -> dict. A
                 default Anthropic-backed client is built when omitted.
             top_k: How many candidates survive retrieval.
+            providers: Restrict candidates to engines from these
+                providers (e.g. {"serpapi"}). None, the default,
+                considers every catalogued engine regardless of
+                provider — unchanged behavior for direct callers.
         """
         self._llm = llm if llm is not None else _default_llm()
         self._top_k = top_k
-        self._catalog = load_catalog()
+        catalog = load_catalog()
+        if providers is not None:
+            catalog = {
+                engine_id: engine
+                for engine_id, engine in catalog.items()
+                if engine.provider in providers
+            }
+        self._catalog = catalog
         self.engine_ids = list(self._catalog)
         self._index = BM25Okapi(
             [

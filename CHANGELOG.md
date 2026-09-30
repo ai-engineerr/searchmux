@@ -6,6 +6,33 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 Nothing yet.
 
+## [0.2.0] — 2026-09-30
+
+### Added
+
+- Multi-provider search: `tavily_search`, `brave_search`, and
+  `exa_search` join the catalog alongside SerpApi's 24 engines, all
+  through the same cache, budget guard, cassette replay, and
+  `Result` normalization. `Engine.provider` marks which backend each
+  entry uses.
+- `SearchMux(tavily_api_key=, brave_api_key=, exa_api_key=)`, each
+  falling back to its own environment variable, and a `backends=`
+  constructor kwarg for injecting fakes in tests. `transport=` keeps
+  working exactly as before for SerpApi.
+- `transport.py`'s retry/backoff loop is now shared by every backend
+  through a `Backend` base class; `Transport` is kept as an alias
+  for the SerpApi backend, so no existing import breaks.
+
+### Verified
+
+- Tavily and Exa request shapes were checked against a live call
+  using real keys. Brave was built and doc-verified to the same
+  standard but has no live check yet — no key was available.
+- Exa requests are capped to 500 characters of page text per result
+  (`contents.text.maxCharacters`), not the full page — every other
+  provider's snippet is a sentence or two, and Exa's default response
+  is otherwise the entire page body.
+
 ## [0.1.5] — 2026-09-29
 
 ### Added
@@ -99,7 +126,8 @@ Recorded because the reasoning matters more than the result.
 - The demo crashed on Windows consoles when a result title contained a typographic space.
 - The secret scanner walked the filesystem instead of asking git which files are tracked, flagging local recordings that were never going to be published.
 
-[Unreleased]: https://github.com/ai-engineerr/searchmux/compare/v0.1.5...HEAD
+[Unreleased]: https://github.com/ai-engineerr/searchmux/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/ai-engineerr/searchmux/compare/v0.1.5...v0.2.0
 [0.1.5]: https://github.com/ai-engineerr/searchmux/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/ai-engineerr/searchmux/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/ai-engineerr/searchmux/compare/v0.1.2...v0.1.3

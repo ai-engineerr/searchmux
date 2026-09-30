@@ -1,6 +1,7 @@
 [
   {
     "engine_id": "google",
+    "provider": "serpapi",
     "description": "General web search across the whole internet",
     "keywords": [
       "web",
@@ -38,6 +39,7 @@
   },
   {
     "engine_id": "google_shopping",
+    "provider": "serpapi",
     "description": "Retail product listings with current prices, sellers, and ratings",
     "keywords": [
       "price",
@@ -77,6 +79,7 @@
   },
   {
     "engine_id": "google_scholar",
+    "provider": "serpapi",
     "description": "Academic papers, citations, and scholarly literature",
     "keywords": [
       "paper",
@@ -116,6 +119,7 @@
   },
   {
     "engine_id": "google_news",
+    "provider": "serpapi",
     "description": "Recent news articles and coverage on a topic",
     "keywords": [
       "news",
@@ -152,6 +156,7 @@
   },
   {
     "engine_id": "google_maps",
+    "provider": "serpapi",
     "description": "Places, businesses, and addresses with ratings and contact details",
     "keywords": [
       "places",
@@ -183,6 +188,7 @@
   },
   {
     "engine_id": "google_local",
+    "provider": "serpapi",
     "description": "Nearby businesses in a locality, such as restaurants or shops",
     "keywords": [
       "nearby",
@@ -214,6 +220,7 @@
   },
   {
     "engine_id": "google_flights",
+    "provider": "serpapi",
     "description": "Airline routes, fares, and flight schedules",
     "keywords": [
       "flights",
@@ -251,6 +258,7 @@
   },
   {
     "engine_id": "google_hotels",
+    "provider": "serpapi",
     "description": "Hotel availability and nightly rates for a stay",
     "keywords": [
       "hotels",
@@ -286,6 +294,7 @@
   },
   {
     "engine_id": "google_jobs",
+    "provider": "serpapi",
     "description": "Job postings and openings matching a role or company",
     "keywords": [
       "jobs",
@@ -317,6 +326,7 @@
   },
   {
     "engine_id": "google_trends",
+    "provider": "serpapi",
     "description": "Search interest over time for a topic",
     "keywords": [
       "trend",
@@ -345,6 +355,7 @@
   },
   {
     "engine_id": "google_images",
+    "provider": "serpapi",
     "description": "Pictures and visual references for a subject",
     "keywords": [
       "pictures",
@@ -379,6 +390,7 @@
   },
   {
     "engine_id": "google_videos",
+    "provider": "serpapi",
     "description": "Video clips across the web on a topic",
     "keywords": [
       "videos",
@@ -412,6 +424,7 @@
   },
   {
     "engine_id": "google_patents",
+    "provider": "serpapi",
     "description": "Patents and inventions matching a topic or number",
     "keywords": [
       "patents",
@@ -438,6 +451,7 @@
   },
   {
     "engine_id": "google_finance",
+    "provider": "serpapi",
     "description": "Stock quotes and current market data for a ticker",
     "keywords": [
       "stock",
@@ -468,6 +482,7 @@
   },
   {
     "engine_id": "google_events",
+    "provider": "serpapi",
     "description": "Upcoming local events such as concerts and shows",
     "keywords": [
       "events",
@@ -499,6 +514,7 @@
   },
   {
     "engine_id": "google_lens",
+    "provider": "serpapi",
     "description": "Look up an image to find what it is or where to buy it",
     "keywords": [
       "reverse image",
@@ -524,6 +540,7 @@
   },
   {
     "engine_id": "google_autocomplete",
+    "provider": "serpapi",
     "description": "Query suggestions as a search is being typed",
     "keywords": [
       "suggestions",
@@ -549,6 +566,7 @@
   },
   {
     "engine_id": "youtube",
+    "provider": "serpapi",
     "description": "YouTube videos and reviews on a topic",
     "keywords": [
       "video",
@@ -575,6 +593,7 @@
   },
   {
     "engine_id": "bing",
+    "provider": "serpapi",
     "description": "Web search results from Bing",
     "keywords": [
       "web",
@@ -599,6 +618,7 @@
   },
   {
     "engine_id": "duckduckgo",
+    "provider": "serpapi",
     "description": "Privacy-preserving web search results",
     "keywords": [
       "web",
@@ -624,6 +644,7 @@
   },
   {
     "engine_id": "amazon",
+    "provider": "serpapi",
     "description": "Product listings from the Amazon marketplace",
     "keywords": [
       "buy",
@@ -651,6 +672,7 @@
   },
   {
     "engine_id": "ebay",
+    "provider": "serpapi",
     "description": "Auctions and used goods listed on eBay",
     "keywords": [
       "auction",
@@ -678,6 +700,7 @@
   },
   {
     "engine_id": "walmart",
+    "provider": "serpapi",
     "description": "Product inventory and prices at Walmart",
     "keywords": [
       "buy",
@@ -705,6 +728,7 @@
   },
   {
     "engine_id": "yelp",
+    "provider": "serpapi",
     "description": "Restaurant and service reviews with ratings",
     "keywords": [
       "reviews",
@@ -732,5 +756,76 @@
       "position": "position"
     },
     "ttl_class": "stable"
+  },
+  {
+    "engine_id": "tavily_search",
+    "provider": "tavily",
+    "description": "Web search via Tavily, an API built for LLM agents, returning clean flat results",
+    "keywords": [
+      "web",
+      "general",
+      "llm",
+      "agent"
+    ],
+    "params": {
+      "query": {
+        "type": "string",
+        "required": true
+      }
+    },
+    "results_key": "results",
+    "result_map": {
+      "title": "title",
+      "url": "url",
+      "snippet": "content"
+    },
+    "ttl_class": "news"
+  },
+  {
+    "engine_id": "brave_search",
+    "provider": "brave",
+    "description": "Web search via Brave Search's independent index",
+    "keywords": [
+      "web",
+      "general",
+      "privacy"
+    ],
+    "params": {
+      "q": {
+        "type": "string",
+        "required": true
+      }
+    },
+    "results_key": "web.results",
+    "result_map": {
+      "title": "title",
+      "url": "url",
+      "snippet": "description"
+    },
+    "ttl_class": "news"
+  },
+  {
+    "engine_id": "exa_search",
+    "provider": "exa",
+    "description": "Neural/semantic web search via Exa, tuned for finding pages by meaning rather than keywords",
+    "keywords": [
+      "web",
+      "general",
+      "semantic",
+      "neural"
+    ],
+    "params": {
+      "query": {
+        "type": "string",
+        "required": true
+      }
+    },
+    "results_key": "results",
+    "result_map": {
+      "title": "title",
+      "url": "url",
+      "snippet": "text"
+    },
+    "ttl_class": "news"
   }
 ]

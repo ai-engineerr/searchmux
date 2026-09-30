@@ -20,13 +20,34 @@ from searchmux.constants import (
     DEFAULT_BUDGET,
     DEFAULT_CACHE_PATH,
     ENV_API_KEY,
+    ENV_BRAVE_KEY,
+    ENV_EXA_KEY,
+    ENV_TAVILY_KEY,
     TTL_BY_CLASS,
 )
 from searchmux.models import Result, RoutingError
 from searchmux.normalize import normalize
-from searchmux.transport import Transport
+from searchmux.transport import (
+    Backend,
+    BraveBackend,
+    ExaBackend,
+    SerpApiBackend,
+    TavilyBackend,
+)
 
 logger = logging.getLogger(__name__)
+
+# provider -> (api-key attribute, env var name, backend class, kwarg name)
+_PROVIDERS: dict[str, tuple[str, str, type[Backend], str]] = {
+    "serpapi": ("_api_key", ENV_API_KEY, SerpApiBackend, "api_key"),
+    "tavily": (
+        "_tavily_api_key", ENV_TAVILY_KEY, TavilyBackend, "tavily_api_key",
+    ),
+    "brave": (
+        "_brave_api_key", ENV_BRAVE_KEY, BraveBackend, "brave_api_key",
+    ),
+    "exa": ("_exa_api_key", ENV_EXA_KEY, ExaBackend, "exa_api_key"),
+}
 
 
 class SearchMux:
@@ -35,9 +56,13 @@ class SearchMux:
     def __init__(
         self,
         api_key: str | None = None,
+        tavily_api_key: str | None = None,
+        brave_api_key: str | None = None,
+        exa_api_key: str | None = None,
         budget: int = DEFAULT_BUDGET,
         cache: str | None = DEFAULT_CACHE_PATH,
-        transport: Transport | None = None,
+        transport: Backend | None = None,
+        backends: dict[str, Backend] | None = None,
         router: object | None = None,
     ) -> None:
         """Build a client.
@@ -45,15 +70,26 @@ class SearchMux:
         Args:
             api_key: SerpApi key. Falls back to SERPAPI_API_KEY. May be
                 None when only replaying cassettes.
+            tavily_api_key: Tavily key. Falls back to TAVILY_API_KEY.
+            brave_api_key: Brave key. Falls back to BRAVE_API_KEY.
+            exa_api_key: Exa key. Falls back to EXA_API_KEY.
             budget: Maximum billable requests for this instance.
             cache: SQLite path, or None to disable caching.
-            transport: Injected transport, for tests.
+            transport: Injected SerpApi backend, for tests. Takes
+                precedence over backends={"serpapi": ...} when both
+                are given.
+            backends: Injected {provider: Backend}, for testing the
+                other three providers.
             router: Object with route(intent) -> (engine_id, params).
         """
         self._api_key = api_key or os.getenv(ENV_API_KEY)
+        self._tavily_api_key = tavily_api_key or os.getenv(ENV_TAVILY_KEY)
+        self._brave_api_key = brave_api_key or os.getenv(ENV_BRAVE_KEY)
+        self._exa_api_key = exa_api_key or os.getenv(ENV_EXA_KEY)
         self._budget = Budget(limit=budget)
         self._cache = Cache(cache) if cache else None
         self._transport = transport
+        self._backends: dict[str, Backend] = dict(backends or {})
         self._router = router
         self._cassette: Cassette | None = None
         self._cache_hits = 0
@@ -150,7 +186,8 @@ class SearchMux:
             return self._cassette.play(engine, params)
 
         self._budget.spend(engine)
-        body = self._require_transport().fetch(engine, params)
+        provider = get_engine(engine).provider
+        body = self._require_backend(provider).fetch(engine, params)
 
         recording = (
             self._cassette is not None
@@ -160,19 +197,34 @@ class SearchMux:
             self._cassette.capture(engine, params, body)
         return body
 
-    def _require_transport(self) -> Transport:
-        """Return the transport, building one on first use.
+    def _require_backend(self, provider: str) -> Backend:
+        """Return the backend for one provider, building it lazily.
+
+        The legacy transport= kwarg is checked first so existing
+        SerpApi-only injection keeps working unchanged; backends= is
+        checked next for the other three providers' tests; only then
+        is a real backend constructed from an API key.
 
         Raises:
-            ValueError: If no API key is available.
+            ValueError: If the provider is unrecognized, or no API
+                key is available for it.
         """
-        if self._transport is None:
-            if not self._api_key:
-                raise ValueError(
-                    f"no API key; set {ENV_API_KEY} or pass api_key="
-                )
-            self._transport = Transport(api_key=self._api_key)
-        return self._transport
+        if provider == "serpapi" and self._transport is not None:
+            return self._transport
+        if provider in self._backends:
+            return self._backends[provider]
+        if provider not in _PROVIDERS:
+            raise ValueError(f"unknown provider: {provider}")
+
+        attr, env_name, backend_cls, kwarg_name = _PROVIDERS[provider]
+        key = getattr(self, attr)
+        if not key:
+            raise ValueError(
+                f"no API key; set {env_name} or pass {kwarg_name}="
+            )
+        backend = backend_cls(api_key=key)
+        self._backends[provider] = backend
+        return backend
 
     @contextmanager
     def record(self, path: str) -> Iterator[None]:

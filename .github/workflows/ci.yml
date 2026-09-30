@@ -35,4 +35,7 @@ jobs:
         env:
           SERPAPI_API_KEY: ""
           ANTHROPIC_API_KEY: ""
+          TAVILY_API_KEY: ""
+          BRAVE_API_KEY: ""
+          EXA_API_KEY: ""
         run: python -m pytest -q

@@ -15,8 +15,16 @@ import subprocess
 
 import pytest
 
-# SerpApi keys are 64 hex chars; Anthropic keys start sk-ant-.
-KEY_PATTERN = re.compile(r"\b[0-9a-f]{40,}\b|sk-[A-Za-z0-9_-]{20,}")
+# SerpApi keys are 64 hex chars; Anthropic keys start sk-ant-; Tavily
+# keys start tvly-; Brave keys start BSA; Exa keys are UUID-shaped.
+KEY_PATTERN = re.compile(
+    r"\b[0-9a-f]{40,}\b"
+    r"|sk-[A-Za-z0-9_-]{20,}"
+    r"|tvly-[A-Za-z0-9_-]{16,}"
+    r"|BSA[A-Za-z0-9_-]{20,}"
+    r"|\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b",
+    re.IGNORECASE,
+)
 
 SCANNED_SUFFIXES = {".py", ".json", ".jsonl", ".md", ".yml", ".yaml", ".txt"}
 

@@ -35,3 +35,22 @@ def test_every_engine_declares_a_required_param() -> None:
             if spec.get("required")
         ]
         assert required, f"{engine_id} has no required param"
+
+
+def test_every_engine_declares_a_provider() -> None:
+    for engine_id, engine in load_catalog().items():
+        assert engine.provider, f"{engine_id} has no provider"
+
+
+def test_existing_engines_are_serpapi() -> None:
+    assert get_engine("google").provider == "serpapi"
+
+
+def test_new_provider_engines_are_catalogued() -> None:
+    for engine_id, provider in [
+        ("tavily_search", "tavily"),
+        ("brave_search", "brave"),
+        ("exa_search", "exa"),
+    ]:
+        engine = get_engine(engine_id)
+        assert engine.provider == provider

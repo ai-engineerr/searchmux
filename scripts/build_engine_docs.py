@@ -58,8 +58,11 @@ def render(rows: list[dict]) -> str:
         "",
         "## Summary",
         "",
-        "| Engine | Required parameters | Results key | Cache TTL |",
-        "| --- | --- | --- | --- |",
+        (
+            "| Engine | Provider | Required parameters | Results key "
+            "| Cache TTL |"
+        ),
+        "| --- | --- | --- | --- | --- |",
     ]
     for record in rows:
         required = ", ".join(
@@ -69,13 +72,18 @@ def render(rows: list[dict]) -> str:
         ) or "—"
         ttl = TTL_LABELS.get(record.get("ttl_class"), record.get("ttl_class"))
         out.append(
-            f"| `{record['engine_id']}` | {required} | "
-            f"`{record['results_key']}` | {ttl} |"
+            f"| `{record['engine_id']}` | {record['provider']} | "
+            f"{required} | `{record['results_key']}` | {ttl} |"
         )
 
     out += ["", "## Details", ""]
     for record in rows:
-        out += [f"### `{record['engine_id']}`", "", record["description"], ""]
+        out += [
+            f"### `{record['engine_id']}`",
+            "",
+            f"Provider: `{record['provider']}`. {record['description']}",
+            "",
+        ]
         out += ["| Parameter | Type | Required |", "| --- | --- | --- |"]
         for name, spec in record["params"].items():
             out.append(

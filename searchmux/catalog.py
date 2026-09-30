@@ -16,10 +16,12 @@ _CATALOG_FILE = Path(__file__).with_name("catalog.json")
 
 @dataclass(frozen=True, slots=True)
 class Engine:
-    """Metadata describing one SerpApi engine.
+    """Metadata describing one search engine, from any provider.
 
     Attributes:
-        engine_id: The value SerpApi expects for its `engine` param.
+        engine_id: The value the provider expects for this engine.
+        provider: Which backend serves this engine ("serpapi",
+            "tavily", "brave", or "exa").
         description: Human-readable purpose, used for BM25 retrieval.
         keywords: Extra retrieval terms.
         params: Param name -> {"type", "required", ...}.
@@ -29,6 +31,7 @@ class Engine:
     """
 
     engine_id: str
+    provider: str
     description: str
     keywords: list[str]
     params: dict
@@ -62,6 +65,7 @@ def load_catalog(path: str | None = None) -> dict[str, Engine]:
     for record in records:
         engine = Engine(
             engine_id=record["engine_id"],
+            provider=record["provider"],
             description=record["description"],
             keywords=record.get("keywords", []),
             params=record["params"],

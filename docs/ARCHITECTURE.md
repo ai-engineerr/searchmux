@@ -25,7 +25,7 @@ intent: str
 [3] Budget guard    raise BudgetExceeded BEFORE spending      budget.py
    │
    ▼
-[4] Transport       httpx → serpapi.com/search                transport.py
+[4] Transport       httpx → the engine's provider backend      transport.py
    │                  …or replay from a cassette              cassette.py
    ▼
 [5] Normalizer      engine envelope → list[Result]            normalize.py
@@ -48,7 +48,7 @@ intent: str
 | `budget.py` | Thread-safe credit ceiling. |
 | `cassette.py` | Record and replay, so tests cost nothing. |
 | `normalize.py` | Engine-specific envelopes → one `Result` shape. |
-| `transport.py` | HTTP, with retry on server errors only. |
+| `transport.py` | HTTP backends per provider (SerpApi, Tavily, Brave, Exa), retrying server errors only. |
 | `models.py` | `Result`, `Money`, and the exception hierarchy. |
 | `envfile.py` | Opt-in `.env` loading. Never called on import. |
 | `adapters/` | Tool-schema emission and the MCP server. |
@@ -62,6 +62,17 @@ intent: str
 `catalog.json` is hand-verified against SerpApi's published documentation and checked into the repository. Nothing resolves a schema over the network at runtime.
 
 The library is therefore importable offline, deterministic across machines, and reproducible for anyone reviewing it. Adding an engine is one JSON record and zero lines of code.
+
+### One retry loop, four request shapes
+
+`transport.py` holds a `Backend` base class with the retry/backoff loop
+(unchanged from the original SerpApi-only `Transport`) and one subclass
+per provider that supplies only `_build_request`: method, URL, and
+whether auth and parameters go in headers, a query string, or a JSON
+body. `Engine.provider` says which backend an engine uses; `SearchMux`
+builds each backend lazily, only when an engine from that provider is
+actually requested, so a SerpApi-only caller never needs a Tavily,
+Brave, or Exa key.
 
 ### Routing is off by default, because measurement said so
 

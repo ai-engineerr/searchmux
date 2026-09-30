@@ -184,3 +184,85 @@ def test_missing_key_raises_only_when_a_call_is_needed(
     q = SearchMux(cache=None)
     with pytest.raises(ValueError, match="SERPAPI_API_KEY"):
         q.search(engine="google", q="x")
+
+
+def test_missing_tavily_key_names_the_right_env_var(
+    tmp_path, monkeypatch
+) -> None:
+    monkeypatch.delenv("TAVILY_API_KEY", raising=False)
+    q = SearchMux(cache=None)
+    with pytest.raises(ValueError, match="TAVILY_API_KEY"):
+        q.search(engine="tavily_search", query="x")
+
+
+def test_tavily_engine_never_requires_a_serpapi_key(
+    tmp_path, monkeypatch
+) -> None:
+    monkeypatch.delenv("SERPAPI_API_KEY", raising=False)
+    calls: dict = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls["n"] = calls.get("n", 0) + 1
+        return httpx.Response(
+            200, json={"results": [{"title": "t", "url": "u"}]}
+        )
+
+    from searchmux.transport import TavilyBackend
+
+    backend = TavilyBackend(
+        api_key="tavily-key",
+        client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    q = SearchMux(cache=str(tmp_path / "c.db"), backends={"tavily": backend})
+    results = q.search(engine="tavily_search", query="x")
+    assert results[0].title == "t"
+    assert calls["n"] == 1
+
+
+def test_legacy_transport_kwarg_wins_over_backends_map(tmp_path) -> None:
+    calls_legacy: dict = {}
+    calls_map: dict = {}
+    legacy = _stub_transport(BODY, calls_legacy)
+    mapped = _stub_transport(BODY, calls_map)
+    q = SearchMux(
+        api_key="test-key",
+        cache=None,
+        transport=legacy,
+        backends={"serpapi": mapped},
+    )
+    q.search(engine="google", q="x")
+    assert calls_legacy.get("n") == 1
+    assert "n" not in calls_map
+
+
+def test_require_backend_rejects_an_unknown_provider() -> None:
+    q = SearchMux(cache=None)
+    with pytest.raises(ValueError, match="unknown provider"):
+        q._require_backend("bing")
+
+
+def test_full_pipeline_works_for_a_non_serpapi_engine(tmp_path) -> None:
+    from searchmux.transport import TavilyBackend
+
+    calls: dict = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls["n"] = calls.get("n", 0) + 1
+        return httpx.Response(
+            200, json={"results": [{"title": "t", "url": "u"}]}
+        )
+
+    backend = TavilyBackend(
+        api_key="tavily-key",
+        client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    q = SearchMux(
+        budget=1,
+        cache=str(tmp_path / "c.db"),
+        backends={"tavily": backend},
+    )
+    q.search(engine="tavily_search", query="x")
+    q.search(engine="tavily_search", query="x")
+    assert calls["n"] == 1
+    assert q.report()["credits_used"] == 1
+    assert q.report()["cache_hits"] == 1
