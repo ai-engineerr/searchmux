@@ -25,7 +25,7 @@ from searchmux.constants import (
     ENV_TAVILY_KEY,
     TTL_BY_CLASS,
 )
-from searchmux.models import Result, RoutingError
+from searchmux.models import Result, RoutingError, SearchMuxAPIError
 from searchmux.normalize import normalize
 from searchmux.transport import (
     Backend,
@@ -162,13 +162,24 @@ class SearchMux:
         self,
         intent: str,
         engine: str | None = None,
+        providers: list[str] | None = None,
         **params,
     ) -> list[Result]:
         """Resolve an intent to an engine and search.
 
         Args:
             intent: What the caller wants to know, in plain language.
-            engine: Pin an engine to skip routing entirely.
+            engine: Pin an engine to skip routing and providers
+                entirely.
+            providers: An ordered provider fallback chain, e.g.
+                ["tavily", "serpapi"]. Each entry is tried on its own;
+                if the routed engine's request fails with
+                SearchMuxAPIError, has no configured key, or no engine
+                from that provider matches the intent, the next
+                provider in the list is tried. None, the default,
+                considers every provider in a single attempt with no
+                fallback -- unchanged behavior. Sort your own list by
+                your own cost_per_request rates for cheapest-first.
             **params: Parameters, merged over whatever the router or
                 the intent supplies.
 
@@ -187,8 +198,25 @@ class SearchMux:
                 "no engine pinned and no router configured; pass "
                 "engine= or construct SearchMux with a router"
             )
-        engine_id, routed = self._router.route(intent)
-        return self.search(engine=engine_id, **{**routed, **params})
+
+        if not providers:
+            # Unchanged call shape: a router without providers=
+            # support (e.g. a hand-written duck-typed router) still
+            # works, since this is exactly what find() always sent.
+            engine_id, routed = self._router.route(intent)
+            return self.search(engine=engine_id, **{**routed, **params})
+
+        last_error: Exception | None = None
+        for provider in providers:
+            try:
+                engine_id, routed = self._router.route(
+                    intent, providers={provider}
+                )
+                return self.search(engine=engine_id, **{**routed, **params})
+            except (SearchMuxAPIError, ValueError, RoutingError) as exc:
+                logger.warning("provider attempt failed: %s", exc)
+                last_error = exc
+        raise last_error
 
     def as_tool(self) -> dict:
         """Return an Anthropic-shaped tool-use schema for this client.

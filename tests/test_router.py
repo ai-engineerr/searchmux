@@ -201,6 +201,31 @@ def test_top_k_none_returns_every_engine() -> None:
     assert len(router.retrieve("anything")) == len(router.engine_ids)
 
 
+def test_route_providers_restricts_the_candidate_set() -> None:
+    llm = FakeLLM({"engine_id": "google", "params": {"q": "x"}})
+    engine_id, _ = Router(llm=llm).route("something", providers={"serpapi"})
+    assert engine_id == "google"
+    prompt = llm.prompts[0]
+    assert '"tavily_search"' not in prompt
+    assert '"brave_search"' not in prompt
+    assert '"exa_search"' not in prompt
+
+
+def test_route_providers_none_keeps_every_provider() -> None:
+    llm = FakeLLM({"engine_id": "tavily_search", "params": {"query": "x"}})
+    engine_id, _ = Router(llm=llm).route("something")
+    assert engine_id == "tavily_search"
+
+
+def test_route_providers_can_pick_a_non_default_provider() -> None:
+    llm = FakeLLM({"engine_id": "tavily_search", "params": {"query": "x"}})
+    engine_id, params = Router(llm=llm).route(
+        "something", providers={"tavily"}
+    )
+    assert engine_id == "tavily_search"
+    assert params == {"query": "x"}
+
+
 def test_providers_filter_excludes_other_providers() -> None:
     router = Router(llm=NullLLM(), providers={"serpapi"})
     assert "tavily_search" not in router.engine_ids

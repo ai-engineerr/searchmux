@@ -57,7 +57,7 @@ results = q.search(engine="google_shopping", q="Pixel 10", gl="in")
 
 Raises `CatalogError` for an unknown engine, `BudgetExceeded` if the budget is spent, and `SearchMuxAPIError` on a SerpApi error.
 
-### `find(intent, engine=None, **params) -> list[Result]`
+### `find(intent, engine=None, providers=None, **params) -> list[Result]`
 
 Resolve plain-language intent to an engine, then search.
 
@@ -74,6 +74,14 @@ q.find("ignored", engine="google", q="explicit")       # q="explicit"
 ```
 
 Raises `RoutingError` when no engine is pinned and no router is configured.
+
+`providers` gives routing an ordered fallback chain instead of one unrestricted attempt:
+
+```python
+q.find("latest AI research papers", providers=["exa", "serpapi"])
+```
+
+Each provider is tried on its own; if that attempt fails — `SearchMuxAPIError`, a missing key, or no matching engine for that provider — the next provider in the list is tried. `None` (the default) considers every provider in a single attempt, exactly as before. There's no automatic "cheapest" mode: sort your own list by your own `cost_per_request` rates for cheapest-first.
 
 ### `report() -> dict`
 
@@ -178,20 +186,24 @@ All inherit `SearchMuxError`, so one `except SearchMuxError` catches everything.
 ```python
 from searchmux.router import Router
 
-Router(llm=None, top_k=None)
+Router(llm=None, top_k=None, providers=None)
 ```
 
 | Argument | Meaning |
 |---|---|
 | `llm` | Anything with `complete(prompt, schema) -> dict`. Defaults to an Anthropic client, which requires `ANTHROPIC_API_KEY`. |
 | `top_k` | How many candidates survive BM25 retrieval. `None`, the default, means no narrowing. |
+| `providers` | Restrict every call this router makes to these provider names, e.g. `{"serpapi"}`. `None`, the default, considers every catalogued engine. |
 
 **Narrowing is off by default because it measured worse.** See [ARCHITECTURE.md](ARCHITECTURE.md#routing-is-off-by-default-because-measurement-said-so).
 
 ```python
 router.retrieve("cheapest flight to Tokyo")   # ranked engine ids, free, no LLM
 router.route("cheapest flight to Tokyo")      # ('google_flights', {...}), one LLM call
+router.route("cheapest flight to Tokyo", providers={"serpapi"})  # this call only
 ```
+
+`route()`'s own `providers` argument narrows further than whatever the constructor already allows — it's what `SearchMux.find(providers=[...])` uses internally to build its fallback chain, one provider at a time.
 
 `route()` validates the decision against the chosen engine's schema, drops parameters the engine does not accept, and makes exactly one repair attempt before raising `RoutingError`.
 

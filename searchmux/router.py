@@ -102,11 +102,19 @@ class Router:
             return [engine_id for engine_id, _ in ranked]
         return [engine_id for engine_id, _ in ranked[: self._top_k]]
 
-    def route(self, intent: str) -> tuple[str, dict]:
+    def route(
+        self,
+        intent: str,
+        providers: set[str] | None = None,
+    ) -> tuple[str, dict]:
         """Resolve an intent to an engine and validated parameters.
 
         Args:
             intent: Plain-language description of what is wanted.
+            providers: Restrict this one call's candidates to these
+                provider names, e.g. {"tavily"}. Narrows whatever this
+                router was already built with; None, the default,
+                considers every candidate this router allows.
 
         Returns:
             The chosen engine_id and its parameters.
@@ -116,6 +124,12 @@ class Router:
                 required parameters are still missing after one repair.
         """
         candidates = self.retrieve(intent)
+        if providers is not None:
+            candidates = [
+                engine_id
+                for engine_id in candidates
+                if self._catalog[engine_id].provider in providers
+            ]
         schema = self._decision_schema(candidates)
         decision = self._llm.complete(
             self._build_prompt(intent, candidates, ""), schema

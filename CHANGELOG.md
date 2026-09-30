@@ -26,6 +26,15 @@ All notable changes to this project are recorded here. The format follows [Keep 
   with no rate given raises `ValueError` instead of silently not
   counting. `budget=` keeps meaning request-count exactly as before;
   `budget_usd` is off unless explicitly set.
+- Provider-level fallback routing. `q.find(intent, providers=["exa",
+  "serpapi"])` tries each provider in order, moving to the next on a
+  backend failure, a missing key, or no matching engine, instead of
+  the caller having to catch and retry manually. `Router.route()`
+  gained a matching per-call `providers` filter that
+  `SearchMux.find()` uses internally. `providers=None` (the default)
+  is a single unrestricted attempt, identical to today's behavior,
+  including for hand-written routers that don't accept a `providers`
+  argument at all.
 
 ## [0.2.0] — 2026-09-30
 

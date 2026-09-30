@@ -432,6 +432,101 @@ def test_report_includes_usd_fields_when_budget_usd_is_set(
     assert report["remaining_usd"] == 0.75
 
 
+def test_find_providers_falls_back_on_backend_failure(tmp_path) -> None:
+    from searchmux.transport import TavilyBackend
+
+    class OrderedRouter:
+        def route(self, intent, providers=None):
+            provider = next(iter(providers))
+            if provider == "tavily":
+                return "tavily_search", {"query": intent}
+            return "google", {"q": intent}
+
+    def failing_handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(500)
+
+    failing_tavily = TavilyBackend(
+        api_key="k",
+        client=httpx.Client(transport=httpx.MockTransport(failing_handler)),
+    )
+
+    calls: dict = {}
+    q = SearchMux(
+        api_key="test-key",
+        cache=None,
+        transport=_stub_transport(BODY, calls),
+        backends={"tavily": failing_tavily},
+        router=OrderedRouter(),
+    )
+    results = q.find("something", providers=["tavily", "serpapi"])
+    assert results[0].title == "t"
+    assert calls["n"] == 1
+
+
+def test_find_providers_falls_back_on_missing_key(
+    tmp_path, monkeypatch
+) -> None:
+    monkeypatch.delenv("TAVILY_API_KEY", raising=False)
+
+    class OrderedRouter:
+        def route(self, intent, providers=None):
+            provider = next(iter(providers))
+            if provider == "tavily":
+                return "tavily_search", {"query": intent}
+            return "google", {"q": intent}
+
+    calls: dict = {}
+    q = SearchMux(
+        api_key="test-key",
+        cache=None,
+        transport=_stub_transport(BODY, calls),
+        router=OrderedRouter(),
+    )
+    results = q.find("something", providers=["tavily", "serpapi"])
+    assert results[0].title == "t"
+
+
+def test_find_providers_raises_when_every_provider_fails(
+    monkeypatch,
+) -> None:
+    monkeypatch.delenv("TAVILY_API_KEY", raising=False)
+    monkeypatch.delenv("BRAVE_API_KEY", raising=False)
+
+    class OrderedRouter:
+        def route(self, intent, providers=None):
+            provider = next(iter(providers))
+            engine = {
+                "tavily": "tavily_search",
+                "brave": "brave_search",
+            }[provider]
+            key = "query" if provider == "tavily" else "q"
+            return engine, {key: intent}
+
+    q = SearchMux(cache=None, router=OrderedRouter())
+    with pytest.raises(ValueError):
+        q.find("something", providers=["tavily", "brave"])
+
+
+def test_find_providers_none_keeps_the_old_single_attempt_shape(
+    tmp_path,
+) -> None:
+    """A router without providers= support must keep working when
+    find() is called without providers=, exactly as before."""
+    calls: dict = {}
+
+    class LegacyRouter:
+        def route(self, intent: str) -> tuple[str, dict]:
+            return "google", {"q": "routed"}
+
+    q = SearchMux(
+        api_key="test-key",
+        cache=None,
+        transport=_stub_transport(BODY, calls),
+        router=LegacyRouter(),
+    )
+    assert q.find("anything")[0].title == "t"
+
+
 def test_report_omits_usd_fields_by_default(tmp_path) -> None:
     calls: dict = {}
     q = SearchMux(
