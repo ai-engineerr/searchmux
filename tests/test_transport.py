@@ -6,7 +6,12 @@ import httpx
 import pytest
 
 from searchmux.models import SearchMuxAPIError
-from searchmux.transport import BraveBackend, ExaBackend, TavilyBackend, Transport
+from searchmux.transport import (
+    BraveBackend,
+    ExaBackend,
+    TavilyBackend,
+    Transport,
+)
 
 
 def _transport(handler: httpx.MockTransport) -> Transport:
