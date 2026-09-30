@@ -103,11 +103,18 @@ def _currency_from_text(text: object) -> str | None:
 
 
 def _build_extra(mapping: dict, item: dict) -> dict:
-    """Promote engine-specific fields worth surfacing."""
+    """Promote every engine-specific field the catalog maps.
+
+    ``result_map["extra"]`` is {extra_key: source_key in the raw
+    item}. A field is promoted only when the raw item actually has
+    it, so listing a field an engine sometimes omits does not give
+    every result a spurious key.
+    """
     extra = {}
-    seller = item.get(mapping.get("source", "__absent__"))
-    if seller:
-        extra["seller"] = seller
+    for extra_key, source_key in mapping.get("extra", {}).items():
+        value = item.get(source_key)
+        if value:
+            extra[extra_key] = value
     return extra
 
 def _dig(body: dict, path: str) -> object:

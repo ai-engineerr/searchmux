@@ -196,3 +196,47 @@ def test_exa_results_map_to_common_shape() -> None:
     assert result.url == "https://x.test/c"
     assert result.snippet == "Exa's neural search summary of the Pixel 10."
     assert result.source == "exa_search"
+
+
+def test_tavily_extra_promotes_relevance_score() -> None:
+    body = {
+        "results": [
+            {
+                "title": "Pixel 10 review",
+                "url": "https://x.test/a",
+                "content": "A review.",
+                "score": 0.87,
+            }
+        ]
+    }
+    result = normalize("tavily_search", body)[0]
+    assert result.extra["score"] == 0.87
+
+
+def test_exa_extra_promotes_published_date() -> None:
+    body = {
+        "results": [
+            {
+                "title": "Pixel 10 review",
+                "url": "https://x.test/c",
+                "text": "Exa's neural search summary of the Pixel 10.",
+                "publishedDate": "2025-09-04T00:00:00.000Z",
+            }
+        ]
+    }
+    result = normalize("exa_search", body)[0]
+    assert result.extra["published_date"] == "2025-09-04T00:00:00.000Z"
+
+
+def test_extra_omits_a_mapped_field_when_the_item_lacks_it() -> None:
+    body = {
+        "results": [
+            {
+                "title": "No score here",
+                "url": "https://x.test/d",
+                "content": "x",
+            }
+        ]
+    }
+    result = normalize("tavily_search", body)[0]
+    assert "score" not in result.extra

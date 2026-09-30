@@ -4,7 +4,13 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- `Result.extra` now promotes any field a catalog entry maps under
+  `result_map["extra"]`, not just `seller`. Tavily results carry a
+  `score` (relevance) and Exa results carry `published_date`, verified
+  against live responses from both. `google_shopping`'s existing
+  `seller` promotion moved onto this same mechanism.
 
 ## [0.2.0] — 2026-09-30
 

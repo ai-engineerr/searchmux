@@ -72,8 +72,10 @@
       "position": "position",
       "price": "extracted_price",
       "currency": "currency",
-      "source": "source",
-      "price_text": "price"
+      "price_text": "price",
+      "extra": {
+        "seller": "source"
+      }
     },
     "ttl_class": "volatile"
   },
@@ -777,7 +779,10 @@
     "result_map": {
       "title": "title",
       "url": "url",
-      "snippet": "content"
+      "snippet": "content",
+      "extra": {
+        "score": "score"
+      }
     },
     "ttl_class": "news"
   },
@@ -824,7 +829,10 @@
     "result_map": {
       "title": "title",
       "url": "url",
-      "snippet": "text"
+      "snippet": "text",
+      "extra": {
+        "published_date": "publishedDate"
+      }
     },
     "ttl_class": "news"
   }
