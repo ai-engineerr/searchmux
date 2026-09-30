@@ -15,7 +15,7 @@ from searchmux.adapters.tool import openai_tool_schema, tool_schema
 from searchmux.budget import Budget
 from searchmux.cache import Cache, request_key
 from searchmux.cassette import MODE_RECORD, MODE_REPLAY, Cassette
-from searchmux.catalog import get_engine
+from searchmux.catalog import Engine, get_engine
 from searchmux.constants import (
     DEFAULT_BUDGET,
     DEFAULT_CACHE_PATH,
@@ -50,6 +50,18 @@ _PROVIDERS: dict[str, tuple[str, str, type[Backend], str]] = {
 }
 
 
+def _is_cacheable(spec: Engine, engine_id: str, no_cache: set[str]) -> bool:
+    """Return whether a request to this engine should touch the cache.
+
+    The catalog's own cacheable flag can only be narrowed at runtime,
+    never widened: no_cache adds exclusions, it cannot re-enable an
+    engine the catalog marked non-cacheable.
+    """
+    if not spec.cacheable:
+        return False
+    return spec.provider not in no_cache and engine_id not in no_cache
+
+
 class SearchMux:
     """Routes, caches, and meters SerpApi searches."""
 
@@ -64,6 +76,7 @@ class SearchMux:
         transport: Backend | None = None,
         backends: dict[str, Backend] | None = None,
         router: object | None = None,
+        no_cache: set[str] | None = None,
     ) -> None:
         """Build a client.
 
@@ -81,6 +94,11 @@ class SearchMux:
             backends: Injected {provider: Backend}, for testing the
                 other three providers.
             router: Object with route(intent) -> (engine_id, params).
+            no_cache: Provider names or engine ids to exclude from
+                caching at runtime, on top of whatever the catalog's
+                own cacheable flag already says. Only narrows: it
+                cannot re-enable an engine the catalog marked
+                non-cacheable.
         """
         self._api_key = api_key or os.getenv(ENV_API_KEY)
         self._tavily_api_key = tavily_api_key or os.getenv(ENV_TAVILY_KEY)
@@ -91,6 +109,7 @@ class SearchMux:
         self._transport = transport
         self._backends: dict[str, Backend] = dict(backends or {})
         self._router = router
+        self._no_cache = set(no_cache or set())
         self._cassette: Cassette | None = None
         self._cache_hits = 0
 
@@ -107,8 +126,11 @@ class SearchMux:
         spec = get_engine(engine)
         key = request_key(engine, params)
         ttl = TTL_BY_CLASS[spec.ttl_class]
+        cacheable = self._cache is not None and _is_cacheable(
+            spec, engine, self._no_cache
+        )
 
-        if self._cache is not None:
+        if cacheable:
             cached = self._cache.get(key, ttl=ttl)
             if cached is not None:
                 self._cache_hits += 1
@@ -117,7 +139,7 @@ class SearchMux:
 
         body = self._fetch(engine, params)
 
-        if self._cache is not None:
+        if cacheable:
             self._cache.set(key, body)
         return normalize(engine, body)
 

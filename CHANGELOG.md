@@ -11,6 +11,12 @@ All notable changes to this project are recorded here. The format follows [Keep 
   `score` (relevance) and Exa results carry `published_date`, verified
   against live responses from both. `google_shopping`'s existing
   `seller` promotion moved onto this same mechanism.
+- Caching is now opt-out per engine. `Engine.cacheable` (default
+  `True`) lets a catalog entry declare it must never be stored — for a
+  provider whose terms restrict retaining results. `SearchMux(no_cache=
+  {...})` adds the same exclusion at runtime, by provider name or
+  engine id, without editing the catalog; it can only narrow, never
+  re-enable an engine the catalog already marked non-cacheable.
 
 ## [0.2.0] — 2026-09-30
 

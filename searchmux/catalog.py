@@ -28,6 +28,8 @@ class Engine:
         results_key: Response key holding the result list.
         result_map: Result field -> source key in the raw item.
         ttl_class: Cache volatility class.
+        cacheable: Whether responses may be stored at all. True unless
+            a provider's terms forbid storing results.
     """
 
     engine_id: str
@@ -38,6 +40,7 @@ class Engine:
     results_key: str
     result_map: dict
     ttl_class: str = DEFAULT_TTL_CLASS
+    cacheable: bool = True
 
 
 @lru_cache(maxsize=1)
@@ -72,6 +75,7 @@ def load_catalog(path: str | None = None) -> dict[str, Engine]:
             results_key=record["results_key"],
             result_map=record.get("result_map", {}),
             ttl_class=record.get("ttl_class", DEFAULT_TTL_CLASS),
+            cacheable=record.get("cacheable", True),
         )
         catalog[engine.engine_id] = engine
 

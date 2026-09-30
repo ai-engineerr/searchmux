@@ -23,6 +23,7 @@ SearchMux(
     transport: Backend | None = None,
     backends: dict[str, Backend] | None = None,
     router: object | None = None,
+    no_cache: set[str] | None = None,
 )
 ```
 
@@ -37,6 +38,7 @@ SearchMux(
 | `transport` | Injected SerpApi `Backend`, for tests. Takes precedence over `backends={"serpapi": ...}` when both are given. |
 | `backends` | Injected `{provider: Backend}`, for testing Tavily/Brave/Exa without a key. |
 | `router` | Anything with `route(intent) -> (engine_id, params)`. |
+| `no_cache` | Provider names or engine ids to exclude from caching at runtime, on top of the catalog's own `cacheable` flag. Only narrows — it can never re-enable an engine the catalog marked non-cacheable. |
 
 No network call happens at construction. A missing key raises only when a request actually needs one.
 
@@ -199,7 +201,7 @@ load_catalog()                    # {engine_id: Engine}
 get_engine("google_scholar")      # one Engine, or CatalogError
 ```
 
-`Engine` carries `engine_id`, `description`, `keywords`, `params`, `results_key`, `result_map` and `ttl_class`. See [ENGINES.md](ENGINES.md).
+`Engine` carries `engine_id`, `provider`, `description`, `keywords`, `params`, `results_key`, `result_map`, `ttl_class` and `cacheable`. See [ENGINES.md](ENGINES.md).
 
 ## `load_env`
 

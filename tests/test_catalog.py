@@ -1,5 +1,7 @@
 """Tests for catalog loading and lookup."""
 
+import json
+
 import pytest
 
 from searchmux.catalog import get_engine, load_catalog
@@ -54,3 +56,30 @@ def test_new_provider_engines_are_catalogued() -> None:
     ]:
         engine = get_engine(engine_id)
         assert engine.provider == provider
+
+
+def test_cacheable_defaults_to_true() -> None:
+    assert get_engine("google").cacheable is True
+
+
+def test_cacheable_false_is_read_from_the_record(tmp_path) -> None:
+    custom = tmp_path / "catalog.json"
+    custom.write_text(
+        json.dumps(
+            [
+                {
+                    "engine_id": "no_cache_engine",
+                    "provider": "serpapi",
+                    "description": "test",
+                    "keywords": ["test"],
+                    "params": {"q": {"type": "string", "required": True}},
+                    "results_key": "organic_results",
+                    "result_map": {},
+                    "cacheable": False,
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    catalog = load_catalog(path=str(custom))
+    assert catalog["no_cache_engine"].cacheable is False

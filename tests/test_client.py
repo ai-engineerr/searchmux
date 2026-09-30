@@ -266,3 +266,128 @@ def test_full_pipeline_works_for_a_non_serpapi_engine(tmp_path) -> None:
     assert calls["n"] == 1
     assert q.report()["credits_used"] == 1
     assert q.report()["cache_hits"] == 1
+
+
+def test_no_cache_provider_override_skips_caching(tmp_path) -> None:
+    calls: dict = {}
+    q = SearchMux(
+        api_key="test-key",
+        cache=str(tmp_path / "c.db"),
+        transport=_stub_transport(BODY, calls),
+        no_cache={"serpapi"},
+    )
+    q.search(engine="google", q="x")
+    q.search(engine="google", q="x")
+    assert calls["n"] == 2
+    assert q.report()["cache_hits"] == 0
+
+
+def test_no_cache_engine_id_override_skips_caching(tmp_path) -> None:
+    calls: dict = {}
+    q = SearchMux(
+        api_key="test-key",
+        cache=str(tmp_path / "c.db"),
+        transport=_stub_transport(BODY, calls),
+        no_cache={"google"},
+    )
+    q.search(engine="google", q="x")
+    q.search(engine="google", q="x")
+    assert calls["n"] == 2
+
+
+def test_no_cache_override_does_not_affect_other_engines(tmp_path) -> None:
+    calls: dict = {}
+    q = SearchMux(
+        api_key="test-key",
+        cache=str(tmp_path / "c.db"),
+        transport=_stub_transport(BODY, calls),
+        no_cache={"tavily"},
+    )
+    q.search(engine="google", q="x")
+    q.search(engine="google", q="x")
+    assert calls["n"] == 1
+    assert q.report()["cache_hits"] == 1
+
+
+def test_is_cacheable_respects_the_catalog_flag() -> None:
+    from searchmux.catalog import Engine
+    from searchmux.client import _is_cacheable
+
+    spec = Engine(
+        engine_id="x",
+        provider="serpapi",
+        description="d",
+        keywords=[],
+        params={},
+        results_key="r",
+        result_map={},
+        cacheable=False,
+    )
+    assert _is_cacheable(spec, "x", set()) is False
+
+
+def test_is_cacheable_true_by_default() -> None:
+    from searchmux.catalog import Engine
+    from searchmux.client import _is_cacheable
+
+    spec = Engine(
+        engine_id="x",
+        provider="serpapi",
+        description="d",
+        keywords=[],
+        params={},
+        results_key="r",
+        result_map={},
+    )
+    assert _is_cacheable(spec, "x", set()) is True
+
+
+def test_is_cacheable_respects_provider_override() -> None:
+    from searchmux.catalog import Engine
+    from searchmux.client import _is_cacheable
+
+    spec = Engine(
+        engine_id="tavily_search",
+        provider="tavily",
+        description="d",
+        keywords=[],
+        params={},
+        results_key="r",
+        result_map={},
+    )
+    assert _is_cacheable(spec, "tavily_search", {"tavily"}) is False
+
+
+def test_is_cacheable_respects_engine_id_override() -> None:
+    from searchmux.catalog import Engine
+    from searchmux.client import _is_cacheable
+
+    spec = Engine(
+        engine_id="google",
+        provider="serpapi",
+        description="d",
+        keywords=[],
+        params={},
+        results_key="r",
+        result_map={},
+    )
+    assert _is_cacheable(spec, "google", {"google"}) is False
+
+
+def test_no_cache_cannot_re_enable_a_non_cacheable_engine() -> None:
+    """no_cache only narrows; it can never override the catalog's own
+    cacheable=False back to True."""
+    from searchmux.catalog import Engine
+    from searchmux.client import _is_cacheable
+
+    spec = Engine(
+        engine_id="x",
+        provider="serpapi",
+        description="d",
+        keywords=[],
+        params={},
+        results_key="r",
+        result_map={},
+        cacheable=False,
+    )
+    assert _is_cacheable(spec, "x", set()) is False
