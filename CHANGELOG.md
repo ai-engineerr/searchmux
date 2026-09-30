@@ -17,6 +17,15 @@ All notable changes to this project are recorded here. The format follows [Keep 
   {...})` adds the same exclusion at runtime, by provider name or
   engine id, without editing the catalog; it can only narrow, never
   re-enable an engine the catalog already marked non-cacheable.
+- Optional dollar budget alongside the existing request-count one.
+  `SearchMux(budget_usd=10.0, cost_per_request={"serpapi": 0.0075})`
+  raises `BudgetExceeded` before a request would push real spend past
+  the cap. No default prices are shipped — real per-request cost
+  varies by the caller's own pricing plan, so a hardcoded number would
+  misrepresent it for most users; a provider used under `budget_usd`
+  with no rate given raises `ValueError` instead of silently not
+  counting. `budget=` keeps meaning request-count exactly as before;
+  `budget_usd` is off unless explicitly set.
 
 ## [0.2.0] — 2026-09-30
 

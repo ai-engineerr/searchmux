@@ -19,6 +19,8 @@ SearchMux(
     brave_api_key: str | None = None,
     exa_api_key: str | None = None,
     budget: int = 50,
+    budget_usd: float | None = None,
+    cost_per_request: dict[str, float] | None = None,
     cache: str | None = ".searchmux.db",
     transport: Backend | None = None,
     backends: dict[str, Backend] | None = None,
@@ -33,7 +35,9 @@ SearchMux(
 | `tavily_api_key` | Tavily key. Falls back to `TAVILY_API_KEY`. |
 | `brave_api_key` | Brave key. Falls back to `BRAVE_API_KEY`. |
 | `exa_api_key` | Exa key. Falls back to `EXA_API_KEY`. |
-| `budget` | Maximum billable requests for this instance. Cache hits and replays do not count. |
+| `budget` | Maximum billable requests for this instance. Cache hits and replays do not count. Always active. |
+| `budget_usd` | Optional dollar cap, checked alongside `budget`. `None`, the default, disables dollar tracking entirely — every existing caller is unaffected. |
+| `cost_per_request` | `{provider: your real cost per request}`, e.g. `{"serpapi": 0.0075}` — your own pricing plan, not a published default. Only consulted when `budget_usd` is set; a provider used with no rate here raises `ValueError` before the request is made. |
 | `cache` | SQLite path, or `None` to disable caching. |
 | `transport` | Injected SerpApi `Backend`, for tests. Takes precedence over `backends={"serpapi": ...}` when both are given. |
 | `backends` | Injected `{provider: Backend}`, for testing Tavily/Brave/Exa without a key. |
@@ -77,6 +81,7 @@ Raises `RoutingError` when no engine is pinned and no router is configured.
 q.report()
 # {'credits_used': 4, 'remaining': 46,
 #  'by_engine': {'google_shopping': 1, 'google_news': 3},
+#  'spent_usd': 0.03, 'remaining_usd': 4.97,  # only when budget_usd is set
 #  'cache_hits': 12}
 ```
 

@@ -374,6 +374,75 @@ def test_is_cacheable_respects_engine_id_override() -> None:
     assert _is_cacheable(spec, "google", {"google"}) is False
 
 
+def test_budget_usd_raises_before_exceeding(tmp_path) -> None:
+    calls: dict = {}
+    q = SearchMux(
+        api_key="test-key",
+        cache=None,
+        transport=_stub_transport(BODY, calls),
+        budget=100,
+        budget_usd=0.5,
+        cost_per_request={"serpapi": 0.4},
+    )
+    q.search(engine="google", q="a")
+    with pytest.raises(BudgetExceeded):
+        q.search(engine="google", q="b")
+    assert calls["n"] == 1
+
+
+def test_budget_usd_unset_ignores_cost_per_request(tmp_path) -> None:
+    calls: dict = {}
+    q = SearchMux(
+        api_key="test-key",
+        cache=None,
+        transport=_stub_transport(BODY, calls),
+        budget=2,
+        cost_per_request={"serpapi": 1000.0},
+    )
+    q.search(engine="google", q="a")
+    q.search(engine="google", q="b")
+    assert calls["n"] == 2
+
+
+def test_budget_usd_missing_rate_raises_value_error(tmp_path) -> None:
+    q = SearchMux(
+        api_key="test-key",
+        cache=None,
+        transport=_stub_transport(BODY, {}),
+        budget_usd=10.0,
+    )
+    with pytest.raises(ValueError, match="serpapi"):
+        q.search(engine="google", q="x")
+
+
+def test_report_includes_usd_fields_when_budget_usd_is_set(
+    tmp_path,
+) -> None:
+    calls: dict = {}
+    q = SearchMux(
+        api_key="test-key",
+        cache=None,
+        transport=_stub_transport(BODY, calls),
+        budget_usd=1.0,
+        cost_per_request={"serpapi": 0.25},
+    )
+    q.search(engine="google", q="a")
+    report = q.report()
+    assert report["spent_usd"] == 0.25
+    assert report["remaining_usd"] == 0.75
+
+
+def test_report_omits_usd_fields_by_default(tmp_path) -> None:
+    calls: dict = {}
+    q = SearchMux(
+        api_key="test-key",
+        cache=None,
+        transport=_stub_transport(BODY, calls),
+    )
+    q.search(engine="google", q="a")
+    assert "spent_usd" not in q.report()
+
+
 def test_no_cache_cannot_re_enable_a_non_cacheable_engine() -> None:
     """no_cache only narrows; it can never override the catalog's own
     cacheable=False back to True."""

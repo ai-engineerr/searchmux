@@ -72,6 +72,8 @@ class SearchMux:
         brave_api_key: str | None = None,
         exa_api_key: str | None = None,
         budget: int = DEFAULT_BUDGET,
+        budget_usd: float | None = None,
+        cost_per_request: dict[str, float] | None = None,
         cache: str | None = DEFAULT_CACHE_PATH,
         transport: Backend | None = None,
         backends: dict[str, Backend] | None = None,
@@ -87,6 +89,15 @@ class SearchMux:
             brave_api_key: Brave key. Falls back to BRAVE_API_KEY.
             exa_api_key: Exa key. Falls back to EXA_API_KEY.
             budget: Maximum billable requests for this instance.
+                Always active.
+            budget_usd: Optional dollar cap, checked alongside budget.
+                None, the default, means no dollar tracking; every
+                existing caller's behavior is unchanged.
+            cost_per_request: Provider name -> real cost of one
+                request on your own pricing plan, e.g.
+                {"serpapi": 0.0075}. Only consulted when budget_usd is
+                set; a provider used with no rate here raises
+                ValueError before the request is made.
             cache: SQLite path, or None to disable caching.
             transport: Injected SerpApi backend, for tests. Takes
                 precedence over backends={"serpapi": ...} when both
@@ -104,7 +115,11 @@ class SearchMux:
         self._tavily_api_key = tavily_api_key or os.getenv(ENV_TAVILY_KEY)
         self._brave_api_key = brave_api_key or os.getenv(ENV_BRAVE_KEY)
         self._exa_api_key = exa_api_key or os.getenv(ENV_EXA_KEY)
-        self._budget = Budget(limit=budget)
+        self._budget = Budget(
+            limit=budget,
+            budget_usd=budget_usd,
+            cost_per_request=cost_per_request,
+        )
         self._cache = Cache(cache) if cache else None
         self._transport = transport
         self._backends: dict[str, Backend] = dict(backends or {})
@@ -207,8 +222,8 @@ class SearchMux:
         if replaying:
             return self._cassette.play(engine, params)
 
-        self._budget.spend(engine)
         provider = get_engine(engine).provider
+        self._budget.spend(engine, provider)
         body = self._require_backend(provider).fetch(engine, params)
 
         recording = (
