@@ -764,7 +764,6 @@
     "keywords": [
       "web",
       "general",
-      "tavily",
       "llm",
       "agent"
     ],
@@ -789,7 +788,6 @@
     "keywords": [
       "web",
       "general",
-      "brave",
       "privacy"
     ],
     "params": {
@@ -813,7 +811,6 @@
     "keywords": [
       "web",
       "general",
-      "exa",
       "semantic",
       "neural"
     ],

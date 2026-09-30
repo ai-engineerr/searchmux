@@ -62,12 +62,13 @@ Two areas deserve extra care because their failure modes are silent:
 
 Most additions are one JSON record and no code.
 
-1. Read the engine's page on serpapi.com. **Verify the parameter names against the documentation — do not guess.** Several engines are counter-intuitive: Amazon takes `k`, eBay takes `_nkw`, Walmart takes `query`, Yelp requires `find_loc`, YouTube takes `search_query`.
+1. Read the engine's page in its provider's documentation (serpapi.com for a SerpApi engine). **Verify the parameter names against the documentation — do not guess.** Several engines are counter-intuitive: Amazon takes `k`, eBay takes `_nkw`, Walmart takes `query`, Yelp requires `find_loc`, YouTube takes `search_query`.
 2. Add a record to `searchmux/catalog.json`:
 
 ```json
 {
   "engine_id": "google_scholar",
+  "provider": "serpapi",
   "description": "Academic papers, citations, and scholarly literature",
   "keywords": ["paper", "research", "citation", "academic", "journal"],
   "params": {
@@ -79,6 +80,8 @@ Most additions are one JSON record and no code.
   "ttl_class": "stable"
 }
 ```
+
+`provider` is required and must be `"serpapi"`, `"tavily"`, `"brave"`, or `"exa"`.
 
 3. Every engine needs at least one `"required": true` parameter — a test asserts it.
 4. `results_key` may be a dotted path when results nest, for example `interest_over_time.timeline_data`.
