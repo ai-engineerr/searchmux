@@ -5,11 +5,11 @@
 [![Python versions](https://img.shields.io/pypi/pyversions/searchmux)](https://pypi.org/project/searchmux/)
 [![License](https://img.shields.io/pypi/l/searchmux)](https://github.com/ai-engineerr/searchmux/blob/main/LICENSE)
 
-A Python library — not an app, nothing to open or click — that sits between your AI agent and its search APIs: SerpApi, Tavily, Brave Search, and Exa. Ask it something once and it remembers the answer, so your agent never pays for the same search twice, on whichever provider answered it.
+A Python library that sits between your AI agent and its search APIs — SerpApi, Tavily, Brave Search, and Exa. Ask it once and it remembers the answer, so your agent never pays for the same search twice.
 
 *A multiplexer routes one input to the right line among many. That is the job: one plain-language question, four search providers, the correct engine chosen.*
 
-**Cost control and offline testing for agent search, across providers.** Describe what you want to know; SearchMux picks the right engine, caches the answer, caps the spend — in requests or in real dollars — and makes the whole thing testable offline, with zero network calls in CI. SerpApi is the most deeply integrated provider (24 engines, years of verified parameter quirks); Tavily, Brave, and Exa are additional, first-class providers sharing the same cache, budget guard, and offline-replay pipeline.
+**Cost control and offline testing for agent search, across providers.** SearchMux picks the engine, caches the answer, caps the spend in requests or real dollars, and tests offline with zero network calls in CI. SerpApi is the most deeply integrated provider, with 24 engines; Tavily, Brave, and Exa are first-class providers sharing the same cache, budget guard, and offline-replay pipeline.
 
 ```python
 from searchmux import SearchMux
@@ -23,21 +23,21 @@ results = q.find("current Pixel 10 prices in India")
 
 ## The problem
 
-SerpApi alone exposes 100+ search engines, each with its own parameter vocabulary and response envelope key — `organic_results`, `shopping_results`, `news_results`, `video_results`. Add Tavily, Brave, and Exa and an agent builder is juggling four different APIs, four different billing accounts, and no shared way to cap what any of them cost. Three consequences, none of them solved by any single provider's own SDK:
+SerpApi alone exposes 100+ search engines, each with its own parameter vocabulary and response shape. Add Tavily, Brave, and Exa and an agent builder is juggling four APIs, four billing accounts, and no shared way to cap the cost. Three consequences, unsolved by any single provider's SDK:
 
-**Engine selection doesn't work at scale.** LLM agents degrade past roughly 20–30 tools. SerpApi's own `serpapi-search-tools-python` exposes 9 engines out of 100+. `serpapi-mcp` takes the opposite approach — one generic `search` tool where the model must name the engine and invent parameters unaided — so in practice it defaults to plain `google` for everything, or picks a plausible-but-wrong engine. Every wrong attempt costs a credit, on whichever provider it hit.
+**Engine selection doesn't work at scale.** LLM agents degrade past roughly 20–30 tools. SerpApi's own `serpapi-search-tools-python` exposes 9 engines out of 100+; `serpapi-mcp` goes the other way, one generic `search` tool where the model must name the engine and invent parameters unaided — in practice it defaults to plain `google` or picks a plausible-but-wrong one. Every wrong attempt costs a credit.
 
-**Development is unaffordable, per provider.** A free SerpApi account carries 250 search credits per month. An agent making 4 searches per run, executed 40 times over an afternoon of debugging, burns 160 of them — and Tavily, Brave, and Exa each have their own separate free-tier ceiling. None of them cache, so the second identical request costs exactly as much as the first, on every provider, every time.
+**Development is unaffordable, per provider.** A free SerpApi account carries 250 search credits a month; 4 searches per run over an afternoon of debugging burns through 160 of them. Tavily, Brave, and Exa each have their own separate free-tier ceiling. None of them cache — the second identical request costs as much as the first, every time.
 
-**Search-backed agents are effectively untestable.** A 30-test suite at 3 searches per test costs 90 credits per CI run against any one of these APIs, so the rational choice is to not write tests. Across the 120 projects in the BuiltWithSerpApi gallery, none ship a test suite that exercises a search path.
+**Search-backed agents are effectively untestable.** A 30-test suite at 3 searches each costs 90 credits per CI run, so the rational choice is not writing tests. None of the 120 projects in the BuiltWithSerpApi gallery ship a test suite that exercises a search path.
 
-SearchMux is the layer underneath all three, for every provider it supports — one cache, one budget (in requests or in dollars), one offline-replayable test path, regardless of which API actually answered the query.
+SearchMux is the layer underneath all three, for every provider it supports: one cache, one budget, one offline-replayable test path — regardless of which API answered the query.
 
 ---
 
 ## Measured results
 
-**These numbers predate Tavily, Brave, and Exa.** They were measured against the 24-engine SerpApi-only catalog, before the multi-provider work landed. Adding three more general-purpose "web search" engines to the candidate pool plausibly changes routing accuracy, and we haven't re-run the eval to find out — that needs a live `ANTHROPIC_API_KEY`, which we don't have configured in this environment right now. Re-running it, on real data rather than a guess, is a known open item. Treat this table as evidence for the SerpApi-only router, not a current-catalog claim.
+**These numbers predate Tavily, Brave, and Exa.** They were measured against the 24-engine SerpApi-only catalog. Adding three more general-purpose engines to the candidate pool plausibly changes routing accuracy; the eval hasn't been re-run to confirm that, since it needs a live `ANTHROPIC_API_KEY`. Treat this table as evidence for the SerpApi-only router, not a current-catalog claim.
 
 Routing accuracy on [`evals/routing.jsonl`](https://github.com/ai-engineerr/searchmux/blob/main/evals/routing.jsonl) — 50 hand-labelled intents spanning every catalogued engine, phrased the way a user would phrase them, never naming the engine. Cases where the ambiguity is genuine (a plain web question really could go to Google, Bing, or DuckDuckGo) accept any of the reasonable engines; forcing one answer would measure the label rather than the router.
 
@@ -52,13 +52,13 @@ Routing accuracy on [`evals/routing.jsonl`](https://github.com/ai-engineerr/sear
 
 ### What the numbers actually showed — including where we were wrong
 
-Our starting thesis was that narrowing 100+ engines down to a handful before the model sees them would beat handing it everything. **On this eval that is false, and the measurement says so plainly.**
+The starting thesis was that narrowing 100+ engines to a handful before the model sees them would beat handing it everything. **This eval says that's false.**
 
-BM25 narrowing to 5 scored 82% — *exactly* its own retrieval recall@5 of 82%. The model chose correctly from every shortlist it was given; the shortlist was simply missing the right engine 18% of the time. BM25 ranked `ebay` above `google_scholar` for "peer reviewed studies on CRISPR off-target effects". Recall@k measured 52 / 72 / 82 / 86 / 88 / 100% at k = 1 / 3 / 5 / 8 / 12 / 24, so narrowing is a hard ceiling, not a filter.
+BM25 narrowing to 5 scored 82% — exactly its own retrieval recall@5. The model chose correctly from every shortlist it received; the shortlist was missing the right engine 18% of the time (it ranked `ebay` above `google_scholar` for "peer reviewed studies on CRISPR off-target effects"). Recall@k: 52 / 72 / 82 / 86 / 88 / 100% at k = 1 / 3 / 5 / 8 / 12 / 24 — narrowing is a hard ceiling, not a filter.
 
-The premise that agents degrade past 20–30 tools simply does not bind at 24 engines. **Narrowing is therefore off by default.**
+That premise doesn't bind at 24 engines. **Narrowing is off by default.**
 
-What survives, and why the schema layer still earns its place: a schema built from every engine's parameters is **rejected by the API as "Schema is too complex"**, so parameter validity cannot be bought by brute force. SearchMux carries `params` as a fixed list of name/value pairs — constant schema size however large the catalog grows — and validates names against the chosen engine afterwards, with one repair attempt. That lands the same 98% engine accuracy as the names-only baseline *while also* guaranteeing the parameter shape, which the baseline does not.
+The schema layer still earns its place: a schema built from every engine's parameters is **rejected by the API as "Schema is too complex."** SearchMux carries `params` as a fixed list of name/value pairs — constant size regardless of catalog growth — and validates names against the chosen engine afterward, with one repair attempt. Same 98% accuracy as the names-only baseline, plus a guaranteed parameter shape the baseline doesn't have.
 
 Retrieval stays available (`Router(top_k=12)`) for catalogs big enough that prompt size, not accuracy, becomes the binding cost.
 
@@ -68,11 +68,13 @@ Reproduce the free arm on a fresh clone, no API key required:
 python -m evals.run_eval
 ```
 
-The two LLM arms cost money to run, so they are not pre-baked here — set `ANTHROPIC_API_KEY` and the same command scores all three. **The 52% figure is keyword retrieval alone, with no model involved**, which is the finding that justified skipping embeddings entirely.
+The two LLM arms cost money, so they're not pre-baked here — set `ANTHROPIC_API_KEY` and the same command scores all three. **52% is keyword retrieval alone, no model involved** — the finding that justified skipping embeddings entirely.
 
 ### Provider comparison
 
-Head-to-head on 60 queries across six categories — factual, research, current events, how-to, technical, health/science, 10 of each — run live against SerpApi's `google` engine, Tavily's `tavily_search`, and Exa's `exa_search`, all three asked for the same 10 results per query so `avg results` reflects the provider rather than an accidental default. Run started 2026-09-30T09:06:59 UTC, one snapshot from one network location — latency numbers will move around on a different run or a different network, which is exactly why median and p95 are reported instead of a bare mean. Every run is saved as a dated JSON snapshot under [`evals/results/`](https://github.com/ai-engineerr/searchmux/tree/main/evals/results), so this becomes a real history to compare against over time rather than a one-off number — nothing here runs on a schedule or in CI, since that would mean committing to recurring paid spend on three providers, a decision this project hasn't made.
+Head-to-head on 60 queries across six categories — factual, research, current events, how-to, technical, health/science, 10 each — against SerpApi's `google`, Tavily's `tavily_search`, and Exa's `exa_search`. All three requested the same 10 results per query, so `avg results` reflects the provider, not an accidental default.
+
+Run started 2026-09-30T09:06:59 UTC — one snapshot, one network location. Latency will move on a different run or network, which is why median and p95 are reported instead of a mean. Every run saves a dated JSON snapshot to [`evals/results/`](https://github.com/ai-engineerr/searchmux/tree/main/evals/results), building a real history over time. Nothing runs on a schedule or in CI — that would mean committing to recurring paid spend on three providers, a decision not yet made.
 
 | provider | n | success | 1st-attempt | median latency | p95 latency | avg results | approx tokens returned | list cost/request | total list cost |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -81,14 +83,20 @@ Head-to-head on 60 queries across six categories — factual, research, current 
 | exa | 60 | 100% | 100% | 1834 ms | 2371 ms | 9.9 | 1237 | $0.0070 | $0.420 |
 | brave | — | **pending** — no API key available | | | | | | $0.0050 | — |
 
-**Cost** is each provider's published *list price per request*, checked 2026-09-30 (SerpApi's Developer plan, $75/mo for 5,000 searches; Tavily's pay-as-you-go rate; Exa's base search endpoint; Brave's Search plan) — not necessarily your account's actual rate, the same reason `SearchMux`'s own `budget_usd` ships no default prices. **Approx tokens returned** replaces a raw snippet-character count: it's `len(text) // 4` across every result's snippet, a rough proxy for what an agent's downstream LLM call actually pays to read, which is the number this project's cost story cares about. Tavily returns cleaned page content (long); Exa's snippets are deliberately capped at 500 characters (`contents.text.maxCharacters` in `ExaBackend`, to bound exactly this cost) — SerpApi returns a short native search snippet.
+**Cost** is each provider's published list price per request, checked 2026-09-30 (SerpApi Developer plan, $75/mo for 5,000 searches; Tavily pay-as-you-go; Exa's base endpoint; Brave's Search plan) — not necessarily your account's rate, the same reason `budget_usd` ships no defaults.
 
-**1st-attempt** separates "succeeded straight away" from "succeeded after a retry," and it's where this run earns its keep: SerpApi's **median** latency (1,068 ms) is competitive, but its **p95** (16,195 ms) is not, and one of the 60 queries failed outright after 3 retries. That tail shows up in nearly every category, not one outlier — p95 latency was 91,643 ms for `current_events`, 31,823 ms for `health_science`, 20,441 ms for `technical`, 14,633 ms for `how_to`. Tavily and Exa stayed tight across every category (p95 within roughly 2x of their own median throughout, no category-specific blowups). A bare mean would have hidden exactly this — median alone would have hidden it too. Full per-category tables are in the [saved snapshot](https://github.com/ai-engineerr/searchmux/tree/main/evals/results); reported here is the shape of the finding, not all 36 rows. SerpApi does not charge a credit for a server-side cache hit on an identical recent search; none of this run's queries repeat, so that did not affect these numbers either way. **Brave** is listed with its published price for reference but has no live row — no API key has been available — rather than being silently absent from the table.
+**Approx tokens returned** replaces a raw snippet-character count: `len(text) // 4` across every result, a proxy for what a downstream LLM call pays to read. Tavily returns cleaned page content (long); Exa's snippets are capped at 500 characters (`contents.text.maxCharacters`); SerpApi returns a short native snippet.
+
+**1st-attempt** separates "succeeded immediately" from "succeeded after a retry." SerpApi's median latency (1,068 ms) is competitive, but its p95 (16,195 ms) isn't — one of the 60 queries failed outright after 3 retries. That tail showed up in nearly every category: p95 was 91,643 ms for `current_events`, 31,823 ms for `health_science`, 20,441 ms for `technical`, 14,633 ms for `how_to`. A mean or a median alone would have hidden it. Tavily and Exa stayed tight everywhere, p95 within roughly 2x of their own median. Full per-category tables are in the [saved snapshot](https://github.com/ai-engineerr/searchmux/tree/main/evals/results).
+
+SerpApi doesn't charge for a server-side cache hit on an identical recent search; none of this run's queries repeat, so that didn't affect these numbers.
+
+**Brave** is listed with its published price for reference but has no live row — no API key has been available.
 
 Two free relevance signals, not a full judge:
 
-- **Domain overlap** — how much each pair of providers agrees on which *sources* exist for the same query, not just that something came back: `serpapi vs tavily 13%`, `serpapi vs exa 3%`, `tavily vs exa 9%`. Low overlap across the board, consistent with the smaller pilot run — these three are drawing from meaningfully different parts of the web for the same queries, not converging on the same handful of sites.
-- **Answer-containment** — for the 10 factual-category queries, each with an unambiguous known answer (a date, a name, a number), whether that answer appears anywhere in the results, checked with a plain word-boundary substring match, no model involved: all three providers hit **100%**. This is a floor, not a relevance score — a page can contain the right number by coincidence, and an open-ended query (the other five categories) has no single string to check for, which is why it only runs on the factual category.
+- **Domain overlap** — how much each pair of providers agrees on which sources exist for the same query: `serpapi vs tavily 13%`, `serpapi vs exa 3%`, `tavily vs exa 9%`. Low across the board — these three draw from genuinely different parts of the web, not the same handful of sites.
+- **Answer-containment** — for the 10 factual-category queries (each with a known date, name, or number as the answer), whether that answer appears anywhere in the results, via plain word-boundary substring match. All three hit **100%**. A floor, not a relevance score — a page can contain the right number by coincidence, and open-ended queries have no single string to check for.
 
 An LLM-judge relevance score (rating results 1–5, validated by hand-checking a subset) would be a real next step and is deliberately not run here — it costs its own budget, and this pass didn't have a standing signal on what's acceptable to spend.
 
@@ -98,7 +106,7 @@ Reproduce it, real cost on all three providers (~$1.80 total at these list price
 python -m evals.provider_eval
 ```
 
-**This measurement changes a default, not just this page.** `recommended_providers(category)` turns the per-category p95 findings above into a fallback order you can hand straight to `find()`:
+**The measurement changes a default, not just this page.** `recommended_providers(category)` turns the per-category p95 findings above into a fallback order for `find()`:
 
 ```python
 from searchmux import recommended_providers
@@ -109,7 +117,7 @@ q.find(
 )
 ```
 
-Still not automatic — SearchMux doesn't classify your query's category for you, and this is one eval run's opinion, not a permanent ruling. See [`docs/API.md`](https://github.com/ai-engineerr/searchmux/blob/main/docs/API.md#recommended_providers) for the full picture, including what it deliberately doesn't cover.
+Still not automatic — SearchMux doesn't classify your query's category, and this is one eval run's opinion, not a permanent ruling. See [`docs/API.md`](https://github.com/ai-engineerr/searchmux/blob/main/docs/API.md#recommended_providers) for what it deliberately doesn't cover.
 
 ---
 
@@ -196,13 +204,13 @@ The rates above are illustrative, not published prices — SerpApi and Tavily es
 
 ## What it does
 
-**Intent router.** BM25 scores your intent against every engine's description, free — no model, no network, no credits. By default every engine goes to the LLM alongside that ranking, because narrowing measured *worse* (see above); `Router(top_k=12)` remains available for catalogs big enough that prompt size, not accuracy, becomes the binding cost. Either way the LLM sees full parameter schemas for its candidates and chooses — picking among fully-specified options beats picking among bare names, which is what a single generic search tool asks of it. `providers=` narrows candidates to specific providers; pin an engine and the whole stage is skipped.
+**Intent router.** BM25 scores your intent against every engine's description, free — no model, no network, no credits. Every engine goes to the LLM by default, since narrowing measured worse (see above); `Router(top_k=12)` stays available once prompt size, not accuracy, becomes the binding cost. The LLM always sees full parameter schemas for its candidates, not bare names. `providers=` narrows candidates to specific providers; pin an engine and the whole stage is skipped.
 
-**Transparent cache.** `sqlite3` from the standard library, no server, no new dependency. The key is a SHA-256 of the canonical request with `api_key` excluded, so it is portable across keys and machines, and identical queries in a dev loop cost nothing after the first. TTL is set per engine class: prices and flights expire in 15 minutes, news in an hour, patents and papers in 30 days.
+**Transparent cache.** `sqlite3` from the standard library, no server, no new dependency. The key is a SHA-256 of the canonical request with `api_key` excluded, so it's portable across keys and machines — identical queries in a dev loop cost nothing after the first. TTL is set per engine class: prices and flights expire in 15 minutes, news in an hour, patents and papers in 30 days.
 
-**Budget guard, in requests or in dollars.** A hard ceiling checked *before* the request, not after — the point is to not spend the credit. Thread-safe: check-and-increment happens under one lock, so twenty concurrent callers against a budget of ten get exactly ten successes. `budget_usd=` adds a real dollar cap on top, using rates you supply for your own pricing plan — no guessed prices baked in, since SerpApi's and Tavily's real cost varies by tier.
+**Budget guard, in requests or in dollars.** A hard ceiling checked before the request, not after. Thread-safe: check-and-increment under one lock, so twenty concurrent callers against a budget of ten get exactly ten successes. `budget_usd=` adds a real dollar cap, using rates you supply — no guessed prices, since SerpApi's and Tavily's real cost varies by plan.
 
-**Provider fallback.** `q.find(intent, providers=["exa", "serpapi"])` tries providers in order, moving to the next on a backend failure, a missing key, or no matching engine — instead of the caller catching and retrying by hand. `providers=None` is a single unrestricted attempt, unchanged from before this existed. `recommended_providers(category)` turns the [provider comparison](#provider-comparison) eval's own p95-latency findings into a ready-made fallback order per query category — not automatic classification, just measurement feeding directly into a default instead of staying a README number nobody acts on.
+**Provider fallback.** `q.find(intent, providers=["exa", "serpapi"])` tries providers in order, falling back on a backend failure, a missing key, or no matching engine. `providers=None` is a single unrestricted attempt, unchanged from before. `recommended_providers(category)` turns the [provider comparison](#provider-comparison) eval's p95-latency findings into a ready-made fallback order per category — not automatic classification, just measurement feeding a default.
 
 **Per-engine cache opt-out.** Every engine is cached by default; a catalog entry can declare `cacheable: false` for a provider whose terms restrict storing results, and `SearchMux(no_cache={...})` adds the same exclusion at runtime, by provider or by engine, without touching the catalog.
 
@@ -210,7 +218,7 @@ The rates above are illustrative, not published prices — SerpApi and Tavily es
 
 **Normalized results.** One `Result` dataclass across every engine and every provider, with `raw` always attached so nothing is lost. Swapping Bing for Tavily stops meaning a rewritten parser. Where a provider reports it, relevance `score` and `published_date` are promoted onto `Result.extra` too.
 
-**Drop-in for agents.** `q.as_tool()` emits an Anthropic-shaped tool definition that Anthropic tool use and LangChain's structured tools consume directly; `q.as_openai_tool()` emits the same schema wrapped in OpenAI's function-calling envelope, so the two never drift apart. See [`examples/openai_agent.py`](https://github.com/ai-engineerr/searchmux/blob/main/examples/openai_agent.py) for a real, working tool-calling loop, not just a claim. `searchmux-mcp` runs an MCP stdio server exposing a single `find` tool, so an MCP client gets every engine across every configured provider behind one tool instead of juggling several. It reads whichever of `SERPAPI_API_KEY`/`TAVILY_API_KEY`/`BRAVE_API_KEY`/`EXA_API_KEY` are set and restricts routing to those providers automatically, so it never picks an engine it has no key for:
+**Drop-in for agents.** `q.as_tool()` emits an Anthropic-shaped tool definition, consumed directly by Anthropic tool use and LangChain's structured tools. `q.as_openai_tool()` wraps the same schema in OpenAI's function-calling envelope, so the two can't drift apart — see [`examples/openai_agent.py`](https://github.com/ai-engineerr/searchmux/blob/main/examples/openai_agent.py) for a working loop. `searchmux-mcp` runs an MCP stdio server exposing a single `find` tool across every configured provider. It reads whichever of `SERPAPI_API_KEY`/`TAVILY_API_KEY`/`BRAVE_API_KEY`/`EXA_API_KEY` are set and restricts routing to those, so it never picks an engine it has no key for:
 
 ```bash
 pip install -e ".[mcp,router]"
@@ -230,7 +238,7 @@ pip install -r requirements.txt
 python -m pytest -q
 ```
 
-179 tests, and **every one passes with every provider key unset** — `SERPAPI_API_KEY`, `TAVILY_API_KEY`, `BRAVE_API_KEY`, `EXA_API_KEY`, and `ANTHROPIC_API_KEY` alike. CI enforces it by explicitly clearing all five on Python 3.11, 3.12 and 3.13 — if a test needs the network, it is a mis-written test. There is no signup between you and a green suite.
+197 tests, and **every one passes with every provider key unset**. CI enforces it by clearing all five — `SERPAPI_API_KEY`, `TAVILY_API_KEY`, `BRAVE_API_KEY`, `EXA_API_KEY`, `ANTHROPIC_API_KEY` — on Python 3.11, 3.12, and 3.13. A test that needs the network is a mis-written test.
 
 ---
 
@@ -240,7 +248,7 @@ SearchMux catalogues **27 engines across four providers**. Every request goes th
 
 **SerpApi** is the most deeply integrated provider: 24 engines covering the Google families (search, shopping, scholar, news, maps, local, flights, hotels, jobs, trends, images, videos, patents, finance, events, lens, autocomplete) plus YouTube, Bing, DuckDuckGo, Amazon, eBay, Walmart and Yelp. Every parameter was verified against the published SerpApi documentation rather than guessed; `amazon` takes `k`, `ebay` takes `_nkw`, `walmart` takes `query`, `yelp` requires `find_loc`.
 
-**Tavily, Brave, and Exa** each contribute one engine — `tavily_search`, `brave_search`, `exa_search` — general web search tuned for LLM agents (Tavily), an independent web index (Brave), and neural/semantic search (Exa). Tavily's and Exa's request shapes are verified against real, live API responses, not just documentation. Brave's is doc-verified only — no Brave API key has been available to confirm it against a live call, and that's stated here rather than left implicit.
+**Tavily, Brave, and Exa** each contribute one engine — `tavily_search`, `brave_search`, `exa_search`: general web search tuned for LLM agents, an independent web index, and neural/semantic search, respectively. Tavily's and Exa's request shapes are verified against live API responses, not just docs. Brave's is doc-verified only — no key has been available yet.
 
 Adding an engine is one JSON record and zero code, so catalogue breadth is a knob rather than a ceiling. The catalog is generated at build time and committed, so the library never does network I/O to resolve a schema and works fully offline.
 
@@ -248,8 +256,8 @@ Adding an engine is one JSON record and zero code, so catalogue breadth is a kno
 
 Stated plainly rather than discovered later:
 
-- **27 engines across four providers, not 100+ SerpApi engines alone.** The remaining SerpApi engines are additive JSON records; the routing and pipeline work is provider- and engine-agnostic.
-- **Brave's request shape is doc-verified only, not live-tested.** No Brave API key has been available yet. It's built to the same standard as Tavily and Exa, but flagged here until it's actually been confirmed against a real response.
+- **27 engines across four providers, not 100+ SerpApi engines alone.** The rest are additive JSON records — routing and pipeline work is provider- and engine-agnostic.
+- **Brave's request shape is doc-verified only, not live-tested.** No key has been available yet — built to the same standard as Tavily and Exa, flagged until confirmed against a real response.
 - **The 98% routing-accuracy figure predates the multi-provider catalog.** It was measured against 24 SerpApi-only engines; see [Measured results](#measured-results) above.
 - **`google_play` is deliberately not catalogued.** Its results nest as `organic_results[].items[]`, a list of lists that a flat results path cannot express. Listing an engine that silently returns nothing is worse than not listing it.
 - **`google_trends` returns timeline entries, not links.** It is a time series, so `Result.title` carries the date and the values live in `Result.raw`.
@@ -261,7 +269,7 @@ Stated plainly rather than discovered later:
 
 ## AI tool disclosure
 
-Per the hackathon rules: this project was built with **Claude Code** used for design, implementation, test authoring, and documentation, including parallel subagents for independent modules and for verifying catalog parameters against each provider's published docs and, where a key was available, real live responses. All architectural decisions, the evaluation methodology, and the scope calls documented above were directed by the authors. Every figure in the results table is a real run of `evals/run_eval.py` against the live API, including the one that disproved our own starting thesis. None are estimates.
+Per the hackathon rules: this project was built with **Claude Code**, used for design, implementation, test authoring, and documentation — including parallel subagents for independent modules and verifying catalog parameters against live responses where a key was available. Architectural decisions, evaluation methodology, and scope calls were directed by the authors. Every figure in the results tables is a real run against the live API, including the one that disproved the starting thesis. None are estimates.
 
 ## Documentation
 

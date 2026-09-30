@@ -10,73 +10,36 @@ Nothing yet.
 
 ### Added
 
-- `recommended_providers(category)`, a data-backed provider fallback
-  order derived directly from the provider eval's own per-category
-  p95-latency findings (`evals/results/2026-09-30.json`) — the first
-  place this project's own measurement changes a shipped default
-  instead of staying a README number nobody acts on. Deliberately not
-  automatic: SearchMux never classifies a query's category itself,
-  this is an opinionated starting point a caller passes straight to
-  `find(providers=recommended_providers("current_events"))`. Covers
-  the six measured categories (factual, research, current_events,
-  how_to, technical, health_science) plus a `DEFAULT_ORDER` fallback
-  for anything else; excludes Brave, no live data for it yet.
-- `Result.extra` now promotes any field a catalog entry maps under
-  `result_map["extra"]`, not just `seller`. Tavily results carry a
-  `score` (relevance) and Exa results carry `published_date`, verified
-  against live responses from both. `google_shopping`'s existing
-  `seller` promotion moved onto this same mechanism.
-- Caching is now opt-out per engine. `Engine.cacheable` (default
-  `True`) lets a catalog entry declare it must never be stored — for a
-  provider whose terms restrict retaining results. `SearchMux(no_cache=
-  {...})` adds the same exclusion at runtime, by provider name or
-  engine id, without editing the catalog; it can only narrow, never
-  re-enable an engine the catalog already marked non-cacheable.
-- Optional dollar budget alongside the existing request-count one.
-  `SearchMux(budget_usd=10.0, cost_per_request={"serpapi": 0.0075})`
-  raises `BudgetExceeded` before a request would push real spend past
-  the cap. No default prices are shipped — real per-request cost
-  varies by the caller's own pricing plan, so a hardcoded number would
-  misrepresent it for most users; a provider used under `budget_usd`
-  with no rate given raises `ValueError` instead of silently not
-  counting. `budget=` keeps meaning request-count exactly as before;
-  `budget_usd` is off unless explicitly set.
-- Provider-level fallback routing. `q.find(intent, providers=["exa",
-  "serpapi"])` tries each provider in order, moving to the next on a
-  backend failure, a missing key, or no matching engine, instead of
-  the caller having to catch and retry manually. `Router.route()`
-  gained a matching per-call `providers` filter that
-  `SearchMux.find()` uses internally. `providers=None` (the default)
-  is a single unrestricted attempt, identical to today's behavior,
-  including for hand-written routers that don't accept a `providers`
-  argument at all.
+- **`recommended_providers(category)`** — a data-backed provider
+  fallback order derived from the provider eval's own per-category
+  p95-latency results. Not automatic; the caller supplies the
+  category. `DEFAULT_ORDER` covers anything else. Brave excluded, no
+  live data yet.
+- **`Result.extra` now promotes any mapped field**, not just `seller`.
+  Tavily carries `score`; Exa carries `published_date`.
+- **Per-engine cache opt-out.** `Engine.cacheable` (default `True`);
+  `SearchMux(no_cache={...})` adds the same exclusion at runtime, by
+  provider or engine id, without editing the catalog.
+- **Optional dollar budget.** `SearchMux(budget_usd=10.0,
+  cost_per_request={"serpapi": 0.0075})` caps real spend alongside
+  the existing request-count `budget=`. No default prices are
+  shipped — real cost varies by plan. `budget_usd` is off unless set.
+- **Provider-level fallback routing.** `q.find(intent,
+  providers=["exa", "serpapi"])` tries providers in order, falling
+  back on a backend failure, a missing key, or no matching engine.
+  `providers=None` (default) is unchanged single-attempt behavior.
 
 ### Measured
 
-- `python -m evals.provider_eval`, a head-to-head of SerpApi's
-  `google`, Tavily's `tavily_search`, and Exa's `exa_search`, scaled
-  from 15 to 60 queries across six categories — factual, research,
-  current events, how-to, technical, health/science — with a
-  per-category breakdown, not just one aggregate table. All three
-  asked for the same 10 results per query. Reports median and p95
-  latency plus first-attempt vs. after-retry success, not just a
-  mean: this run caught a real SerpApi failure (1/60 after 3 retries)
-  and a p95 tail (16.2s overall, 91.6s on `current_events`) that its
-  1,068ms median alone would have hidden. Also reports a cost column
-  from each provider's published list price (checked 2026-09-30,
-  explicitly not account-specific) and an approximate-tokens-returned
-  figure instead of a raw snippet length. Two free relevance signals:
-  domain overlap between providers (Jaccard on result domains — all
-  three stayed under 15% with each other, genuinely different
-  sources) and answer-containment on the 10 factual-category queries
-  (100% for all three). Brave is listed with its published price but
-  has no live row — no key available — shown as a pending table row
-  rather than silently omitted. Every run now saves a dated JSON
-  snapshot to `evals/results/`, so this becomes a real history rather
-  than a one-off number; nothing runs on a schedule or in CI, since
-  that would mean committing to recurring paid spend without a
-  standing decision to do so. See the README's Provider comparison
-  section for the full numbers and caveats.
+- **Provider comparison eval**, scaled to 60 queries across 6
+  categories (factual, research, current events, how-to, technical,
+  health/science), with per-category breakdowns, median/p95 latency,
+  first-attempt vs. retry success, a cost column from published list
+  prices, and two free relevance signals (domain overlap,
+  answer-containment). Caught a real SerpApi failure and a p95
+  latency tail up to 91.6s on one category, hidden by its 1,068ms
+  median. Results saved to `evals/results/`; full numbers in the
+  README's Provider comparison section.
 
 ## [0.2.0] — 2026-09-30
 
