@@ -6,6 +6,15 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 Nothing yet.
 
+## [0.3.1] — 2026-09-30
+
+### Changed
+
+- The README/CHANGELOG tightening pass didn't make it into 0.3.0 — it
+  was rebuilt locally but 0.3.0 had already uploaded successfully
+  server-side from an earlier attempt that showed a client-side error.
+  Carried here.
+
 ## [0.3.0] — 2026-09-30
 
 ### Added
@@ -161,7 +170,8 @@ Recorded because the reasoning matters more than the result.
 - The demo crashed on Windows consoles when a result title contained a typographic space.
 - The secret scanner walked the filesystem instead of asking git which files are tracked, flagging local recordings that were never going to be published.
 
-[Unreleased]: https://github.com/ai-engineerr/searchmux/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/ai-engineerr/searchmux/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/ai-engineerr/searchmux/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/ai-engineerr/searchmux/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/ai-engineerr/searchmux/compare/v0.1.5...v0.2.0
 [0.1.5]: https://github.com/ai-engineerr/searchmux/compare/v0.1.4...v0.1.5

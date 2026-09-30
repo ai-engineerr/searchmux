@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "searchmux"
-version = "0.3.0"
+version = "0.3.1"
 description = "Cost control and offline testing for agent search, across SerpApi, Tavily, Brave, and Exa"
 readme = "README.md"
 requires-python = ">=3.11"

@@ -25,4 +25,4 @@ __all__ = [
     "RoutingError",
     "recommended_providers",
 ]
-__version__ = "0.2.0"
+__version__ = "0.3.1"
