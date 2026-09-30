@@ -151,7 +151,10 @@ def test_exa_sends_x_api_key_header_and_json_body() -> None:
 
     _exa(httpx.MockTransport(handler)).fetch("exa_search", {"query": "x"})
     assert seen["key"] == "test-key"
-    assert seen["body"] == {"query": "x", "contents": {"text": True}}
+    assert seen["body"] == {
+        "query": "x",
+        "contents": {"text": {"maxCharacters": 500}},
+    }
 
 
 def test_exa_four_xx_raises_without_retry() -> None:

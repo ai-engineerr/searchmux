@@ -190,7 +190,7 @@ class ExaBackend(Backend):
         return {
             "method": "POST",
             "url": EXA_BASE_URL,
-            "json": {**params, "contents": {"text": True}},
+            "json": {"contents": {"text": {"maxCharacters": 500}}, **params},
             "headers": {"x-api-key": self._api_key},
         }
 

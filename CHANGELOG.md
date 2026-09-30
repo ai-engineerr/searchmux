@@ -28,6 +28,10 @@ Nothing yet.
 - Tavily and Exa request shapes were checked against a live call
   using real keys. Brave was built and doc-verified to the same
   standard but has no live check yet — no key was available.
+- Exa requests are capped to 500 characters of page text per result
+  (`contents.text.maxCharacters`), not the full page — every other
+  provider's snippet is a sentence or two, and Exa's default response
+  is otherwise the entire page body.
 
 ## [0.1.5] — 2026-09-29
 
