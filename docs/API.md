@@ -15,9 +15,13 @@ The facade. One instance owns one budget, one cache and one optional router.
 ```python
 SearchMux(
     api_key: str | None = None,
+    tavily_api_key: str | None = None,
+    brave_api_key: str | None = None,
+    exa_api_key: str | None = None,
     budget: int = 50,
     cache: str | None = ".searchmux.db",
-    transport: Transport | None = None,
+    transport: Backend | None = None,
+    backends: dict[str, Backend] | None = None,
     router: object | None = None,
 )
 ```
@@ -25,9 +29,13 @@ SearchMux(
 | Argument | Meaning |
 |---|---|
 | `api_key` | SerpApi key. Falls back to `SERPAPI_API_KEY`. May be `None` when only replaying cassettes. |
+| `tavily_api_key` | Tavily key. Falls back to `TAVILY_API_KEY`. |
+| `brave_api_key` | Brave key. Falls back to `BRAVE_API_KEY`. |
+| `exa_api_key` | Exa key. Falls back to `EXA_API_KEY`. |
 | `budget` | Maximum billable requests for this instance. Cache hits and replays do not count. |
 | `cache` | SQLite path, or `None` to disable caching. |
-| `transport` | Injected `Transport`, for tests. |
+| `transport` | Injected SerpApi `Backend`, for tests. Takes precedence over `backends={"serpapi": ...}` when both are given. |
+| `backends` | Injected `{provider: Backend}`, for testing Tavily/Brave/Exa without a key. |
 | `router` | Anything with `route(intent) -> (engine_id, params)`. |
 
 No network call happens at construction. A missing key raises only when a request actually needs one.
