@@ -143,3 +143,56 @@ def test_trailing_currency_code_is_recovered() -> None:
         ]
     }
     assert normalize("google_shopping", body)[0].price.currency == "kr"
+
+
+def test_tavily_results_map_to_common_shape() -> None:
+    body = {
+        "results": [
+            {
+                "title": "Pixel 10 review",
+                "url": "https://x.test/a",
+                "content": "A thorough review of the Pixel 10.",
+            }
+        ]
+    }
+    result = normalize("tavily_search", body)[0]
+    assert result.title == "Pixel 10 review"
+    assert result.url == "https://x.test/a"
+    assert result.snippet == "A thorough review of the Pixel 10."
+    assert result.source == "tavily_search"
+
+
+def test_brave_results_map_to_common_shape() -> None:
+    body = {
+        "web": {
+            "results": [
+                {
+                    "title": "Pixel 10 review",
+                    "url": "https://x.test/b",
+                    "description": "Hands-on with the Pixel 10.",
+                }
+            ]
+        }
+    }
+    result = normalize("brave_search", body)[0]
+    assert result.title == "Pixel 10 review"
+    assert result.url == "https://x.test/b"
+    assert result.snippet == "Hands-on with the Pixel 10."
+    assert result.source == "brave_search"
+
+
+def test_exa_results_map_to_common_shape() -> None:
+    body = {
+        "results": [
+            {
+                "title": "Pixel 10 review",
+                "url": "https://x.test/c",
+                "text": "Exa's neural search summary of the Pixel 10.",
+            }
+        ]
+    }
+    result = normalize("exa_search", body)[0]
+    assert result.title == "Pixel 10 review"
+    assert result.url == "https://x.test/c"
+    assert result.snippet == "Exa's neural search summary of the Pixel 10."
+    assert result.source == "exa_search"

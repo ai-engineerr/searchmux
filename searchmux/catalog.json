@@ -756,5 +756,79 @@
       "position": "position"
     },
     "ttl_class": "stable"
+  },
+  {
+    "engine_id": "tavily_search",
+    "provider": "tavily",
+    "description": "Web search via Tavily, an API built for LLM agents, returning clean flat results",
+    "keywords": [
+      "web",
+      "general",
+      "tavily",
+      "llm",
+      "agent"
+    ],
+    "params": {
+      "query": {
+        "type": "string",
+        "required": true
+      }
+    },
+    "results_key": "results",
+    "result_map": {
+      "title": "title",
+      "url": "url",
+      "snippet": "content"
+    },
+    "ttl_class": "news"
+  },
+  {
+    "engine_id": "brave_search",
+    "provider": "brave",
+    "description": "Web search via Brave Search's independent index",
+    "keywords": [
+      "web",
+      "general",
+      "brave",
+      "privacy"
+    ],
+    "params": {
+      "q": {
+        "type": "string",
+        "required": true
+      }
+    },
+    "results_key": "web.results",
+    "result_map": {
+      "title": "title",
+      "url": "url",
+      "snippet": "description"
+    },
+    "ttl_class": "news"
+  },
+  {
+    "engine_id": "exa_search",
+    "provider": "exa",
+    "description": "Neural/semantic web search via Exa, tuned for finding pages by meaning rather than keywords",
+    "keywords": [
+      "web",
+      "general",
+      "exa",
+      "semantic",
+      "neural"
+    ],
+    "params": {
+      "query": {
+        "type": "string",
+        "required": true
+      }
+    },
+    "results_key": "results",
+    "result_map": {
+      "title": "title",
+      "url": "url",
+      "snippet": "text"
+    },
+    "ttl_class": "news"
   }
 ]
