@@ -186,7 +186,10 @@ def test_missing_key_raises_only_when_a_call_is_needed(
         q.search(engine="google", q="x")
 
 
-def test_missing_tavily_key_names_the_right_env_var(tmp_path) -> None:
+def test_missing_tavily_key_names_the_right_env_var(
+    tmp_path, monkeypatch
+) -> None:
+    monkeypatch.delenv("TAVILY_API_KEY", raising=False)
     q = SearchMux(cache=None)
     with pytest.raises(ValueError, match="TAVILY_API_KEY"):
         q.search(engine="tavily_search", query="x")
