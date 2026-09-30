@@ -1,4 +1,4 @@
-"""SearchMux: the search layer for AI agents over SerpApi."""
+"""SearchMux: cost control and offline testing for agent search."""
 
 from searchmux.client import SearchMux
 from searchmux.models import (
@@ -11,6 +11,7 @@ from searchmux.models import (
     SearchMuxAPIError,
     SearchMuxError,
 )
+from searchmux.recommendations import recommended_providers
 
 __all__ = [
     "BudgetExceeded",
@@ -22,5 +23,6 @@ __all__ = [
     "SearchMuxError",
     "Result",
     "RoutingError",
+    "recommended_providers",
 ]
-__version__ = "0.1.0"
+__version__ = "0.2.0"

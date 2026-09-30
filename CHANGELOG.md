@@ -6,6 +6,17 @@ All notable changes to this project are recorded here. The format follows [Keep 
 
 ### Added
 
+- `recommended_providers(category)`, a data-backed provider fallback
+  order derived directly from the provider eval's own per-category
+  p95-latency findings (`evals/results/2026-09-30.json`) — the first
+  place this project's own measurement changes a shipped default
+  instead of staying a README number nobody acts on. Deliberately not
+  automatic: SearchMux never classifies a query's category itself,
+  this is an opinionated starting point a caller passes straight to
+  `find(providers=recommended_providers("current_events"))`. Covers
+  the six measured categories (factual, research, current_events,
+  how_to, technical, health_science) plus a `DEFAULT_ORDER` fallback
+  for anything else; excludes Brave, no live data for it yet.
 - `Result.extra` now promotes any field a catalog entry maps under
   `result_map["extra"]`, not just `seller`. Tavily results carry a
   `score` (relevance) and Exa results carry `published_date`, verified

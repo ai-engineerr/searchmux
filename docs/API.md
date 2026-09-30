@@ -209,6 +209,25 @@ router.route("cheapest flight to Tokyo", providers={"serpapi"})  # this call onl
 
 ---
 
+## `recommended_providers`
+
+```python
+from searchmux import recommended_providers
+
+recommended_providers("current_events")   # ['exa', 'tavily', 'serpapi']
+recommended_providers()                   # overall order, category unknown
+```
+
+A data-backed default provider fallback order, derived from a real eval run ([`evals/results/2026-09-30.json`](https://github.com/ai-engineerr/searchmux/tree/main/evals/results)), not a guess. **Not automatic** — SearchMux never classifies a query's category itself; this is an opinionated starting point you pass straight to `find()` once you already know what kind of query it is:
+
+```python
+q.find("latest SpaceX launch news", providers=recommended_providers("current_events"))
+```
+
+One of `"factual"`, `"research"`, `"current_events"`, `"how_to"`, `"technical"`, `"health_science"`. Any other value, or no argument, returns the overall (not per-category) ranking from the same run. Ordered by **p95 latency**, not median — that run's clearest finding was a provider's recurring latency tail that a median-only ranking would have hidden. Brave isn't included; no live data exists for it yet. Covers general web search only, not SerpApi's category-specific engines (`google_flights`, `google_shopping`, ...), which Tavily and Exa have no equivalent for. See the README's [Provider comparison](https://github.com/ai-engineerr/searchmux/blob/main/README.md#provider-comparison) section for the full numbers this is built from, and re-run `python -m evals.provider_eval` to check whether it still holds.
+
+---
+
 ## `Catalog`
 
 ```python

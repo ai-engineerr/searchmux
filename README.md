@@ -98,6 +98,19 @@ Reproduce it, real cost on all three providers (~$1.80 total at these list price
 python -m evals.provider_eval
 ```
 
+**This measurement changes a default, not just this page.** `recommended_providers(category)` turns the per-category p95 findings above into a fallback order you can hand straight to `find()`:
+
+```python
+from searchmux import recommended_providers
+
+q.find(
+    "latest SpaceX launch news",
+    providers=recommended_providers("current_events"),  # ['exa', 'tavily', 'serpapi']
+)
+```
+
+Still not automatic — SearchMux doesn't classify your query's category for you, and this is one eval run's opinion, not a permanent ruling. See [`docs/API.md`](https://github.com/ai-engineerr/searchmux/blob/main/docs/API.md#recommended_providers) for the full picture, including what it deliberately doesn't cover.
+
 ---
 
 ## Install
@@ -189,7 +202,7 @@ The rates above are illustrative, not published prices — SerpApi and Tavily es
 
 **Budget guard, in requests or in dollars.** A hard ceiling checked *before* the request, not after — the point is to not spend the credit. Thread-safe: check-and-increment happens under one lock, so twenty concurrent callers against a budget of ten get exactly ten successes. `budget_usd=` adds a real dollar cap on top, using rates you supply for your own pricing plan — no guessed prices baked in, since SerpApi's and Tavily's real cost varies by tier.
 
-**Provider fallback.** `q.find(intent, providers=["exa", "serpapi"])` tries providers in order, moving to the next on a backend failure, a missing key, or no matching engine — instead of the caller catching and retrying by hand. `providers=None` is a single unrestricted attempt, unchanged from before this existed.
+**Provider fallback.** `q.find(intent, providers=["exa", "serpapi"])` tries providers in order, moving to the next on a backend failure, a missing key, or no matching engine — instead of the caller catching and retrying by hand. `providers=None` is a single unrestricted attempt, unchanged from before this existed. `recommended_providers(category)` turns the [provider comparison](#provider-comparison) eval's own p95-latency findings into a ready-made fallback order per query category — not automatic classification, just measurement feeding directly into a default instead of staying a README number nobody acts on.
 
 **Per-engine cache opt-out.** Every engine is cached by default; a catalog entry can declare `cacheable: false` for a provider whose terms restrict storing results, and `SearchMux(no_cache={...})` adds the same exclusion at runtime, by provider or by engine, without touching the catalog.
 
