@@ -1,0 +1,231 @@
+{
+  "run_started": "2026-09-30T09:06:59+00:00",
+  "n_queries": 60,
+  "result_count_requested": 10,
+  "providers": [
+    {
+      "provider": "serpapi",
+      "overall": {
+        "n": 60,
+        "success_rate": 0.9833333333333333,
+        "first_attempt_rate": 0.9666666666666667,
+        "median_latency_ms": 1067.8619999998773,
+        "p95_latency_ms": 16195.330999998987,
+        "avg_result_count": 7.95,
+        "avg_approx_tokens": 282.3833333333333,
+        "list_price_per_request": 0.015,
+        "total_list_cost": 0.8999999999999999
+      },
+      "by_category": {
+        "factual": {
+          "n": 10,
+          "success_rate": 1.0,
+          "first_attempt_rate": 1.0,
+          "median_latency_ms": 475.8619500007626,
+          "p95_latency_ms": 6851.203899999746,
+          "avg_result_count": 7.7,
+          "avg_approx_tokens": 251.9
+        },
+        "research": {
+          "n": 10,
+          "success_rate": 1.0,
+          "first_attempt_rate": 1.0,
+          "median_latency_ms": 502.49340000027587,
+          "p95_latency_ms": 3023.714499999187,
+          "avg_result_count": 8.1,
+          "avg_approx_tokens": 294.3
+        },
+        "current_events": {
+          "n": 10,
+          "success_rate": 0.9,
+          "first_attempt_rate": 0.9,
+          "median_latency_ms": 1662.5192000001334,
+          "p95_latency_ms": 91643.05270000114,
+          "avg_result_count": 7.1,
+          "avg_approx_tokens": 252.1
+        },
+        "how_to": {
+          "n": 10,
+          "success_rate": 1.0,
+          "first_attempt_rate": 1.0,
+          "median_latency_ms": 1309.7129500010851,
+          "p95_latency_ms": 14633.311600000525,
+          "avg_result_count": 7.6,
+          "avg_approx_tokens": 268.5
+        },
+        "technical": {
+          "n": 10,
+          "success_rate": 1.0,
+          "first_attempt_rate": 1.0,
+          "median_latency_ms": 915.0888000003761,
+          "p95_latency_ms": 20440.740600000936,
+          "avg_result_count": 8.4,
+          "avg_approx_tokens": 302.8
+        },
+        "health_science": {
+          "n": 10,
+          "success_rate": 1.0,
+          "first_attempt_rate": 0.9,
+          "median_latency_ms": 1905.0075499999366,
+          "p95_latency_ms": 31823.1624,
+          "avg_result_count": 8.8,
+          "avg_approx_tokens": 324.7
+        }
+      },
+      "containment_rate": 1.0
+    },
+    {
+      "provider": "tavily",
+      "overall": {
+        "n": 60,
+        "success_rate": 1.0,
+        "first_attempt_rate": 1.0,
+        "median_latency_ms": 1486.031899999034,
+        "p95_latency_ms": 2604.420300000129,
+        "avg_result_count": 9.433333333333334,
+        "avg_approx_tokens": 2535.733333333333,
+        "list_price_per_request": 0.008,
+        "total_list_cost": 0.48
+      },
+      "by_category": {
+        "factual": {
+          "n": 10,
+          "success_rate": 1.0,
+          "first_attempt_rate": 1.0,
+          "median_latency_ms": 1536.339350000162,
+          "p95_latency_ms": 2658.215700001165,
+          "avg_result_count": 8.8,
+          "avg_approx_tokens": 2164.5
+        },
+        "research": {
+          "n": 10,
+          "success_rate": 1.0,
+          "first_attempt_rate": 1.0,
+          "median_latency_ms": 1639.291850000518,
+          "p95_latency_ms": 2604.420300000129,
+          "avg_result_count": 9.7,
+          "avg_approx_tokens": 2674.9
+        },
+        "current_events": {
+          "n": 10,
+          "success_rate": 1.0,
+          "first_attempt_rate": 1.0,
+          "median_latency_ms": 1586.5224499993928,
+          "p95_latency_ms": 3386.1675999996805,
+          "avg_result_count": 9.6,
+          "avg_approx_tokens": 2644.3
+        },
+        "how_to": {
+          "n": 10,
+          "success_rate": 1.0,
+          "first_attempt_rate": 1.0,
+          "median_latency_ms": 1323.8860499996008,
+          "p95_latency_ms": 3378.037000000404,
+          "avg_result_count": 8.7,
+          "avg_approx_tokens": 2158.1
+        },
+        "technical": {
+          "n": 10,
+          "success_rate": 1.0,
+          "first_attempt_rate": 1.0,
+          "median_latency_ms": 1271.5698000001794,
+          "p95_latency_ms": 2245.1617999995506,
+          "avg_result_count": 9.9,
+          "avg_approx_tokens": 3226.0
+        },
+        "health_science": {
+          "n": 10,
+          "success_rate": 1.0,
+          "first_attempt_rate": 1.0,
+          "median_latency_ms": 1408.6123499992027,
+          "p95_latency_ms": 1841.3882999993803,
+          "avg_result_count": 9.9,
+          "avg_approx_tokens": 2346.6
+        }
+      },
+      "containment_rate": 1.0
+    },
+    {
+      "provider": "exa",
+      "overall": {
+        "n": 60,
+        "success_rate": 1.0,
+        "first_attempt_rate": 1.0,
+        "median_latency_ms": 1833.878299999924,
+        "p95_latency_ms": 2371.0062999998627,
+        "avg_result_count": 9.9,
+        "avg_approx_tokens": 1237.2,
+        "list_price_per_request": 0.007,
+        "total_list_cost": 0.42
+      },
+      "by_category": {
+        "factual": {
+          "n": 10,
+          "success_rate": 1.0,
+          "first_attempt_rate": 1.0,
+          "median_latency_ms": 1921.7679499997757,
+          "p95_latency_ms": 3058.743899999172,
+          "avg_result_count": 10.0,
+          "avg_approx_tokens": 1247.4
+        },
+        "research": {
+          "n": 10,
+          "success_rate": 1.0,
+          "first_attempt_rate": 1.0,
+          "median_latency_ms": 1683.9929500001745,
+          "p95_latency_ms": 2263.88119999865,
+          "avg_result_count": 9.7,
+          "avg_approx_tokens": 1214.4
+        },
+        "current_events": {
+          "n": 10,
+          "success_rate": 1.0,
+          "first_attempt_rate": 1.0,
+          "median_latency_ms": 1686.47030000011,
+          "p95_latency_ms": 2190.564299999096,
+          "avg_result_count": 10.0,
+          "avg_approx_tokens": 1243.0
+        },
+        "how_to": {
+          "n": 10,
+          "success_rate": 1.0,
+          "first_attempt_rate": 1.0,
+          "median_latency_ms": 2035.445599999548,
+          "p95_latency_ms": 3736.1803999992844,
+          "avg_result_count": 10.0,
+          "avg_approx_tokens": 1252.0
+        },
+        "technical": {
+          "n": 10,
+          "success_rate": 1.0,
+          "first_attempt_rate": 1.0,
+          "median_latency_ms": 1871.6963000006217,
+          "p95_latency_ms": 2094.263900000442,
+          "avg_result_count": 9.7,
+          "avg_approx_tokens": 1214.4
+        },
+        "health_science": {
+          "n": 10,
+          "success_rate": 1.0,
+          "first_attempt_rate": 1.0,
+          "median_latency_ms": 1694.3388500003493,
+          "p95_latency_ms": 2159.9219999989145,
+          "avg_result_count": 10.0,
+          "avg_approx_tokens": 1252.0
+        }
+      },
+      "containment_rate": 1.0
+    }
+  ],
+  "domain_overlap": {
+    "serpapi vs tavily": 0.1346745477852158,
+    "serpapi vs exa": 0.032262005193211575,
+    "tavily vs exa": 0.09445311153128491
+  },
+  "list_price_per_request": {
+    "serpapi": 0.015,
+    "tavily": 0.008,
+    "exa": 0.007,
+    "brave": 0.005
+  }
+}

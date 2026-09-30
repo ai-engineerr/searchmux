@@ -1,7 +1,7 @@
-"""Compare SerpApi, Tavily, and Exa head-to-head on the same general
-web-search queries: cost, latency (median and p95, not just mean),
-result count, and how much text comes back. Plus two free relevance
-signals: whether a factual answer actually shows up, and how much
+"""Compare SerpApi, Tavily, and Exa head-to-head across six query
+categories: cost, latency (median and p95, not just mean), result
+count, how much text comes back, and two free relevance signals --
+whether a known factual answer actually shows up, and how much
 providers agree on which sources exist at all.
 
 Brave is excluded from the live run -- no key has been available --
@@ -11,11 +11,13 @@ reported as a pending row, not silently omitted.
 This is NOT a full relevance judge. Answer-containment and domain
 overlap are free, objective signals, not "which result was actually
 best" -- that needs a human or an LLM judge and a separate budget,
-which this pass deliberately does not spend. Fifteen general queries
-plus eight factual ones, not the 100-200 a full study would use: real
-paid calls on three providers, and there is no standing signal on
-acceptable spend for a bigger sample. Scaling it up is real future
-work, not something to fake by inflating this one.
+which this pass deliberately does not spend.
+
+60 queries across six categories (factual, research, current_events,
+how_to, technical, health_science), not the 100-200 a fuller study
+would eventually use -- scaled to what's reasonable to spend without
+a standing budget signal for this specific eval. Growing this further
+is real future work, not something to fake by inflating this run.
 
 Every query goes to exactly one engine per provider -- SerpApi's
 general-purpose `google`, Tavily's `tavily_search`, Exa's
@@ -24,6 +26,12 @@ SerpApi's category-specific engines (flights, shopping, ...), which
 Tavily and Exa have no equivalent for. Every provider is asked for the
 same RESULT_COUNT results, so "avg results" reflects the provider, not
 an accidental default.
+
+Each run is saved as a dated snapshot under evals/results/, so this
+becomes a real history to compare against over time rather than a
+one-off number. Nothing here runs on a schedule or in CI -- that would
+mean committing to recurring paid spend on three providers, which
+needs its own explicit decision, not a default.
 
 Costs real money on all three providers. Run with:
 
@@ -36,6 +44,7 @@ import re
 import statistics
 import sys
 import time
+from collections import defaultdict
 from datetime import UTC, datetime
 from pathlib import Path
 from urllib.parse import urlparse
@@ -47,7 +56,7 @@ from searchmux.models import SearchMuxError
 logger = logging.getLogger(__name__)
 
 QUERIES_PATH = str(Path(__file__).with_name("provider_queries.jsonl"))
-FACTUAL_QUERIES_PATH = str(Path(__file__).with_name("factual_queries.jsonl"))
+RESULTS_DIR = Path(__file__).with_name("results")
 
 RESULT_COUNT = 10
 
@@ -97,33 +106,15 @@ class _RetryWatcher(logging.Handler):
         self.count += 1
 
 
-def load_queries(path: str) -> list[str]:
-    """Read one query per line from a JSONL file.
+def load_queries(path: str) -> list[dict]:
+    """Read {"query", "category", "expect_any"} rows from a JSONL file.
 
     Args:
         path: Path to the JSONL file.
 
     Returns:
-        The queries, in file order.
-    """
-    queries = []
-    with open(path, encoding="utf-8") as handle:
-        for line in handle:
-            line = line.strip()
-            if not line:
-                continue
-            queries.append(json.loads(line)["query"])
-    return queries
-
-
-def load_factual_queries(path: str) -> list[dict]:
-    """Read {"query", "expect_any"} rows from a JSONL file.
-
-    Args:
-        path: Path to the JSONL file.
-
-    Returns:
-        One dict per line, each with a query and acceptable answers.
+        One dict per line, in file order. expect_any is None for
+        every non-factual query.
     """
     rows = []
     with open(path, encoding="utf-8") as handle:
@@ -147,7 +138,7 @@ def _percentile(values: list[float], pct: float) -> float:
 
 
 def run_one(
-    q: SearchMux, engine: str, param: str, count_param: str, query: str
+    q: SearchMux, engine: str, param: str, count_param: str, case: dict
 ) -> dict:
     """Run one query against one engine, timed and retry-instrumented.
 
@@ -159,11 +150,12 @@ def run_one(
         engine: The engine to call.
         param: The engine's query parameter name.
         count_param: The engine's result-count parameter name.
-        query: The search text.
+        case: One row from load_queries (query, category, expect_any).
 
     Returns:
-        Keys ok, first_attempt, latency_ms, result_count,
-        approx_tokens, urls, text.
+        Keys category, ok, first_attempt, latency_ms, result_count,
+        approx_tokens, urls, contains_answer (None when expect_any is
+        unset for this query).
     """
     watcher = _RetryWatcher()
     transport_logger = logging.getLogger("searchmux.transport")
@@ -171,19 +163,31 @@ def run_one(
     start = time.perf_counter()
     try:
         results = q.search(
-            engine=engine, **{param: query, count_param: RESULT_COUNT}
+            engine=engine,
+            **{param: case["query"], count_param: RESULT_COUNT},
         )
         ok = True
     except SearchMuxError as exc:
-        logger.warning("%s failed on %r: %s", engine, query, exc)
+        logger.warning("%s failed on %r: %s", engine, case["query"], exc)
         results = []
         ok = False
     finally:
         latency_ms = (time.perf_counter() - start) * 1000
         transport_logger.removeHandler(watcher)
 
-    text = " ".join(r.snippet or "" for r in results)
+    snippet_text = " ".join(r.snippet or "" for r in results)
+    contains_answer = None
+    if case.get("expect_any"):
+        combined = " ".join(
+            f"{r.title or ''} {r.snippet or ''}" for r in results
+        ).lower()
+        contains_answer = any(
+            re.search(rf"\b{re.escape(answer.lower())}\b", combined)
+            for answer in case["expect_any"]
+        )
+
     return {
+        "category": case["category"],
         "ok": ok,
         "first_attempt": watcher.count == 0,
         "latency_ms": latency_ms,
@@ -192,55 +196,89 @@ def run_one(
         # This is what actually costs money downstream: it's text an
         # agent's LLM call has to pay to read, not just a display
         # snippet -- which is why it matters for the cost story here.
-        "approx_tokens": len(text) // 4,
+        "approx_tokens": len(snippet_text) // 4,
         "urls": [r.url for r in results if r.url],
+        "contains_answer": contains_answer,
     }
 
 
-def score_provider(provider: str, queries: list[str]) -> dict:
-    """Run every query against one provider and summarize the results.
+def _aggregate(rows: list[dict]) -> dict:
+    """Summarize a list of run_one() rows into one stats dict."""
+    n = len(rows)
+    if not n:
+        return {
+            "n": 0,
+            "success_rate": 0.0,
+            "first_attempt_rate": 0.0,
+            "median_latency_ms": 0.0,
+            "p95_latency_ms": 0.0,
+            "avg_result_count": 0.0,
+            "avg_approx_tokens": 0.0,
+        }
+    latencies = [r["latency_ms"] for r in rows]
+    return {
+        "n": n,
+        "success_rate": sum(r["ok"] for r in rows) / n,
+        "first_attempt_rate": sum(r["first_attempt"] for r in rows) / n,
+        "median_latency_ms": statistics.median(latencies),
+        "p95_latency_ms": _percentile(latencies, 0.95),
+        "avg_result_count": sum(r["result_count"] for r in rows) / n,
+        "avg_approx_tokens": sum(r["approx_tokens"] for r in rows) / n,
+    }
+
+
+def score_provider(provider: str, cases: list[dict]) -> dict:
+    """Run every case against one provider and summarize the results,
+    overall and broken down by category.
 
     Args:
         provider: One of "serpapi", "tavily", "exa".
-        queries: The queries to run.
+        cases: Rows from load_queries.
 
     Returns:
-        Aggregate stats, plus "_rows" (per-query detail, used by the
-        domain-overlap check).
+        Keys provider, overall (an _aggregate() dict plus cost),
+        by_category (category -> _aggregate() dict),
+        containment_rate (over cases with expect_any set),
+        and "_rows" (per-case detail, used by domain_overlap).
     """
     engine, param, count_param = _PROVIDER_ENGINES[provider]
-    q = SearchMux(cache=None, budget=len(queries) + 5)
+    q = SearchMux(cache=None, budget=len(cases) + 5)
     rows = [
-        run_one(q, engine, param, count_param, query) for query in queries
+        run_one(q, engine, param, count_param, case) for case in cases
     ]
 
-    n = len(rows)
-    latencies = [r["latency_ms"] for r in rows]
+    overall = _aggregate(rows)
     price = LIST_PRICE_PER_REQUEST.get(provider)
+    overall["list_price_per_request"] = price
+    overall["total_list_cost"] = (
+        price * overall["n"] if price is not None else None
+    )
+
+    by_category: dict[str, list[dict]] = defaultdict(list)
+    for row in rows:
+        by_category[row["category"]].append(row)
+    category_stats = {
+        category: _aggregate(cat_rows)
+        for category, cat_rows in by_category.items()
+    }
+
+    factual = [r for r in rows if r["contains_answer"] is not None]
+    containment_rate = (
+        sum(r["contains_answer"] for r in factual) / len(factual)
+        if factual
+        else 0.0
+    )
+
     return {
         "provider": provider,
-        "n": n,
-        "success_rate": sum(r["ok"] for r in rows) / n if n else 0.0,
-        "first_attempt_rate": (
-            sum(r["first_attempt"] for r in rows) / n if n else 0.0
-        ),
-        "median_latency_ms": statistics.median(latencies) if n else 0.0,
-        "p95_latency_ms": _percentile(latencies, 0.95),
-        "avg_result_count": (
-            sum(r["result_count"] for r in rows) / n if n else 0.0
-        ),
-        "avg_approx_tokens": (
-            sum(r["approx_tokens"] for r in rows) / n if n else 0.0
-        ),
-        "list_price_per_request": price,
-        "total_list_cost": price * n if price is not None else None,
+        "overall": overall,
+        "by_category": category_stats,
+        "containment_rate": containment_rate,
         "_rows": rows,
     }
 
 
-def domain_overlap(
-    provider_rows: dict[str, list[dict]],
-) -> dict[str, float]:
+def domain_overlap(provider_rows: dict[str, list[dict]]) -> dict:
     """Return average domain-set overlap between every pair of providers.
 
     Jaccard similarity of the set of result domains, averaged across
@@ -279,52 +317,8 @@ def domain_overlap(
     return pairs
 
 
-def answer_containment(provider: str, factual_cases: list[dict]) -> dict:
-    """Check how often a known answer actually appears in the results.
-
-    A free, objective relevance proxy for queries with an unambiguous
-    factual answer -- not a substitute for judging open-ended queries,
-    where there is no single string to check for.
-
-    Args:
-        provider: One of "serpapi", "tavily", "exa".
-        factual_cases: Rows from load_factual_queries.
-
-    Returns:
-        Keys provider, n, containment_rate.
-    """
-    engine, param, count_param = _PROVIDER_ENGINES[provider]
-    q = SearchMux(cache=None, budget=len(factual_cases) + 5)
-    hits = 0
-    for case in factual_cases:
-        try:
-            results = q.search(
-                engine=engine,
-                **{param: case["query"], count_param: RESULT_COUNT},
-            )
-        except SearchMuxError as exc:
-            logger.warning(
-                "%s failed on %r: %s", engine, case["query"], exc
-            )
-            continue
-        text = " ".join(
-            f"{r.title or ''} {r.snippet or ''}" for r in results
-        ).lower()
-        if any(
-            re.search(rf"\b{re.escape(answer.lower())}\b", text)
-            for answer in case["expect_any"]
-        ):
-            hits += 1
-    n = len(factual_cases)
-    return {
-        "provider": provider,
-        "n": n,
-        "containment_rate": hits / n if n else 0.0,
-    }
-
-
-def _format_table(rows: list[dict]) -> str:
-    """Render scored providers as a markdown table."""
+def _format_overall_table(rows: list[dict]) -> str:
+    """Render each provider's overall stats as a markdown table."""
     lines = [
         "| provider | n | success | 1st-attempt | median lat | "
         "p95 lat | avg results | approx tokens | list cost/req | "
@@ -332,21 +326,21 @@ def _format_table(rows: list[dict]) -> str:
         "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for row in rows:
-        price = row["list_price_per_request"]
+        o = row["overall"]
+        price = o["list_price_per_request"]
         price_str = f"${price:.4f}" if price is not None else "—"
         total_str = (
-            f"${row['total_list_cost']:.3f}"
-            if row["total_list_cost"] is not None
+            f"${o['total_list_cost']:.3f}"
+            if o["total_list_cost"] is not None
             else "—"
         )
         lines.append(
-            f"| {row['provider']} | {row['n']} | "
-            f"{row['success_rate']:.0%} | "
-            f"{row['first_attempt_rate']:.0%} | "
-            f"{row['median_latency_ms']:.0f} ms | "
-            f"{row['p95_latency_ms']:.0f} ms | "
-            f"{row['avg_result_count']:.1f} | "
-            f"{row['avg_approx_tokens']:.0f} | {price_str} | "
+            f"| {row['provider']} | {o['n']} | "
+            f"{o['success_rate']:.0%} | {o['first_attempt_rate']:.0%} "
+            f"| {o['median_latency_ms']:.0f} ms | "
+            f"{o['p95_latency_ms']:.0f} ms | "
+            f"{o['avg_result_count']:.1f} | "
+            f"{o['avg_approx_tokens']:.0f} | {price_str} | "
             f"{total_str} |"
         )
     lines.append(
@@ -356,53 +350,100 @@ def _format_table(rows: list[dict]) -> str:
     return "\n".join(lines)
 
 
+def _format_category_table(rows: list[dict], category: str) -> str:
+    """Render one category's per-provider stats as a markdown table."""
+    lines = [
+        "| provider | n | success | median lat | p95 lat | "
+        "avg results | approx tokens |",
+        "| --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for row in rows:
+        c = row["by_category"].get(category)
+        if c is None or not c["n"]:
+            lines.append(f"| {row['provider']} | 0 | — | | | | |")
+            continue
+        lines.append(
+            f"| {row['provider']} | {c['n']} | {c['success_rate']:.0%} "
+            f"| {c['median_latency_ms']:.0f} ms | "
+            f"{c['p95_latency_ms']:.0f} ms | "
+            f"{c['avg_result_count']:.1f} | {c['avg_approx_tokens']:.0f} |"
+        )
+    return "\n".join(lines)
+
+
 def main() -> None:
-    """Score every provider, check relevance signals, print tables."""
+    """Score every provider, check relevance signals, print and save."""
     # A cp1252 Windows console can't encode the em dashes below;
     # replace rather than crash on someone else's machine.
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     logging.basicConfig(level=logging.WARNING)
     load_env()
-    queries = load_queries(QUERIES_PATH)
-    factual_cases = load_factual_queries(FACTUAL_QUERIES_PATH)
+    cases = load_queries(QUERIES_PATH)
+    categories = sorted({case["category"] for case in cases})
 
     run_started = datetime.now(UTC).isoformat(timespec="seconds")
 
-    rows = [score_provider(p, queries) for p in _PROVIDER_ENGINES]
+    rows = [score_provider(p, cases) for p in _PROVIDER_ENGINES]
     provider_rows = {row["provider"]: row["_rows"] for row in rows}
     overlap = domain_overlap(provider_rows)
-    containment = [
-        answer_containment(p, factual_cases) for p in _PROVIDER_ENGINES
-    ]
 
     print(f"Run started: {run_started}")
     print(
-        f"{len(queries)} general web-search queries, "
-        f"{RESULT_COUNT} results requested per query from every "
-        f"provider. Latency is network-dependent and this is one "
-        f"snapshot run, not a guaranteed steady-state number. SerpApi "
-        f"does not charge a credit for a server-side cache hit on an "
-        f"identical recent search; none of this run's queries repeat, "
-        f"so that did not affect these numbers either way. Brave "
-        f"excluded from live results, no key available.\n"
+        f"{len(cases)} queries across {len(categories)} categories "
+        f"({', '.join(categories)}), {RESULT_COUNT} results requested "
+        f"per query from every provider. Latency is network-dependent "
+        f"and this is one snapshot run, not a guaranteed steady-state "
+        f"number. SerpApi does not charge a credit for a server-side "
+        f"cache hit on an identical recent search; none of this run's "
+        f"queries repeat, so that did not affect these numbers either "
+        f"way. Brave excluded from live results, no key available.\n"
     )
-    print(_format_table(rows))
+    print("## Overall\n")
+    print(_format_overall_table(rows))
+
+    print("\n## By category\n")
+    for category in categories:
+        print(f"\n### {category}\n")
+        print(_format_category_table(rows, category))
 
     print(
-        "\nDomain overlap between providers (Jaccard, higher = more "
-        "agreement on sources):\n"
+        "\n## Domain overlap between providers (Jaccard, higher = "
+        "more agreement on sources)\n"
     )
     for pair, score in overlap.items():
         print(f"  {pair}: {score:.0%}")
 
     print(
-        f"\nAnswer-containment on {len(factual_cases)} factual queries "
-        f"with a known answer (free, word-boundary substring match — "
-        f"not a full relevance judge):\n"
+        "\n## Answer-containment on the factual category (free, "
+        "word-boundary substring match — not a full relevance judge)\n"
     )
-    for row in containment:
+    for row in rows:
         print(f"  {row['provider']}: {row['containment_rate']:.0%}")
+
+    RESULTS_DIR.mkdir(exist_ok=True)
+    snapshot_path = RESULTS_DIR / f"{run_started[:10]}.json"
+    snapshot = {
+        "run_started": run_started,
+        "n_queries": len(cases),
+        "result_count_requested": RESULT_COUNT,
+        "providers": [
+            {
+                "provider": row["provider"],
+                "overall": row["overall"],
+                "by_category": row["by_category"],
+                "containment_rate": row["containment_rate"],
+            }
+            for row in rows
+        ],
+        "domain_overlap": overlap,
+        "list_price_per_request": LIST_PRICE_PER_REQUEST,
+    }
+    snapshot_path.write_text(
+        json.dumps(snapshot, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    print(f"\nSaved snapshot to {snapshot_path}")
 
 
 if __name__ == "__main__":

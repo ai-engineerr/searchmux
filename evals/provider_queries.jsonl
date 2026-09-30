@@ -1,15 +1,60 @@
-{"query": "latest developments in quantum computing"}
-{"query": "how does photosynthesis work"}
-{"query": "current population of Tokyo"}
-{"query": "best practices for Python error handling"}
-{"query": "history of the Eiffel Tower"}
-{"query": "symptoms of vitamin D deficiency"}
-{"query": "how to make a sourdough bread starter"}
-{"query": "what caused the 2008 financial crisis"}
-{"query": "latest SpaceX Starship launch news"}
-{"query": "benefits of intermittent fasting"}
-{"query": "how do neural networks learn"}
-{"query": "climate change effects on coral reefs"}
-{"query": "who won the most recent Nobel Prize in physics"}
-{"query": "difference between TCP and UDP"}
-{"query": "recent advances in battery technology for electric vehicles"}
+{"query": "what is the capital of Japan", "category": "factual", "expect_any": ["tokyo"]}
+{"query": "what is the capital of Australia", "category": "factual", "expect_any": ["canberra"]}
+{"query": "how many continents are there on Earth", "category": "factual", "expect_any": ["seven", "7"]}
+{"query": "what is the boiling point of water in celsius", "category": "factual", "expect_any": ["100"]}
+{"query": "who developed the theory of general relativity", "category": "factual", "expect_any": ["einstein"]}
+{"query": "what is the largest planet in the solar system", "category": "factual", "expect_any": ["jupiter"]}
+{"query": "what is the tallest mountain in the world", "category": "factual", "expect_any": ["everest"]}
+{"query": "what year did world war 2 end", "category": "factual", "expect_any": ["1945"]}
+{"query": "speed of light in kilometers per second", "category": "factual", "expect_any": ["299,792", "299792"]}
+{"query": "chemical symbol for gold", "category": "factual", "expect_any": ["au"]}
+{"query": "latest developments in quantum computing", "category": "research", "expect_any": null}
+{"query": "how does photosynthesis work", "category": "research", "expect_any": null}
+{"query": "climate change effects on coral reefs", "category": "research", "expect_any": null}
+{"query": "how do neural networks learn", "category": "research", "expect_any": null}
+{"query": "recent advances in battery technology for electric vehicles", "category": "research", "expect_any": null}
+{"query": "CRISPR gene editing recent breakthroughs", "category": "research", "expect_any": null}
+{"query": "dark matter detection experiments progress", "category": "research", "expect_any": null}
+{"query": "mRNA vaccine technology advances", "category": "research", "expect_any": null}
+{"query": "fusion energy reactor breakthroughs", "category": "research", "expect_any": null}
+{"query": "exoplanet discoveries in the habitable zone", "category": "research", "expect_any": null}
+{"query": "latest SpaceX Starship launch news", "category": "current_events", "expect_any": null}
+{"query": "recent Federal Reserve interest rate decision", "category": "current_events", "expect_any": null}
+{"query": "latest AI model releases this year", "category": "current_events", "expect_any": null}
+{"query": "recent major earthquake news", "category": "current_events", "expect_any": null}
+{"query": "current state of the Israel-Gaza ceasefire", "category": "current_events", "expect_any": null}
+{"query": "latest developments in US-China trade relations", "category": "current_events", "expect_any": null}
+{"query": "recent breakthroughs in cancer treatment announced", "category": "current_events", "expect_any": null}
+{"query": "latest updates on global chip shortage", "category": "current_events", "expect_any": null}
+{"query": "recent major cybersecurity breach news", "category": "current_events", "expect_any": null}
+{"query": "current status of the Artemis moon mission", "category": "current_events", "expect_any": null}
+{"query": "how to make a sourdough bread starter", "category": "how_to", "expect_any": null}
+{"query": "how to set up a home wifi mesh network", "category": "how_to", "expect_any": null}
+{"query": "how to start meditating for beginners", "category": "how_to", "expect_any": null}
+{"query": "how to negotiate a salary increase", "category": "how_to", "expect_any": null}
+{"query": "how to train for a first marathon", "category": "how_to", "expect_any": null}
+{"query": "how to reduce screen time effectively", "category": "how_to", "expect_any": null}
+{"query": "how to start composting at home", "category": "how_to", "expect_any": null}
+{"query": "how to improve public speaking skills", "category": "how_to", "expect_any": null}
+{"query": "how to budget for a first apartment", "category": "how_to", "expect_any": null}
+{"query": "how to learn a new language quickly", "category": "how_to", "expect_any": null}
+{"query": "difference between TCP and UDP", "category": "technical", "expect_any": null}
+{"query": "best practices for Python error handling", "category": "technical", "expect_any": null}
+{"query": "how does garbage collection work in Java", "category": "technical", "expect_any": null}
+{"query": "what is eventual consistency in distributed systems", "category": "technical", "expect_any": null}
+{"query": "how do JWT tokens work for authentication", "category": "technical", "expect_any": null}
+{"query": "difference between SQL and NoSQL databases", "category": "technical", "expect_any": null}
+{"query": "what is a race condition in concurrent programming", "category": "technical", "expect_any": null}
+{"query": "how does DNS resolution work", "category": "technical", "expect_any": null}
+{"query": "what is the CAP theorem", "category": "technical", "expect_any": null}
+{"query": "how do load balancers distribute traffic", "category": "technical", "expect_any": null}
+{"query": "symptoms of vitamin D deficiency", "category": "health_science", "expect_any": null}
+{"query": "benefits of intermittent fasting", "category": "health_science", "expect_any": null}
+{"query": "how does the immune system fight viruses", "category": "health_science", "expect_any": null}
+{"query": "effects of chronic sleep deprivation on the brain", "category": "health_science", "expect_any": null}
+{"query": "benefits of strength training for longevity", "category": "health_science", "expect_any": null}
+{"query": "how does insulin resistance develop", "category": "health_science", "expect_any": null}
+{"query": "gut microbiome effects on mental health", "category": "health_science", "expect_any": null}
+{"query": "long-term effects of high sugar diets", "category": "health_science", "expect_any": null}
+{"query": "how vaccines create immunity", "category": "health_science", "expect_any": null}
+{"query": "benefits of cold exposure therapy", "category": "health_science", "expect_any": null}

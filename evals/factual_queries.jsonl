@@ -1,8 +1,0 @@
-{"query": "what is the boiling point of water in celsius", "expect_any": ["100"]}
-{"query": "what year did world war 2 end", "expect_any": ["1945"]}
-{"query": "what is the capital of australia", "expect_any": ["canberra"]}
-{"query": "how many continents are there on earth", "expect_any": ["seven", "7"]}
-{"query": "who developed the theory of general relativity", "expect_any": ["einstein"]}
-{"query": "what is the largest planet in the solar system", "expect_any": ["jupiter"]}
-{"query": "what is the tallest mountain in the world", "expect_any": ["everest"]}
-{"query": "in what year was the eiffel tower completed", "expect_any": ["1889"]}
