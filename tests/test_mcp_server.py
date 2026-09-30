@@ -1,6 +1,16 @@
-"""Tests for the MCP server's provider-key detection."""
+"""Tests for the MCP server's provider-key detection.
 
-from searchmux.adapters.mcp_server import _configured_providers
+mcp is an optional dependency ([mcp] extra, not in requirements.txt),
+but importing this module still requires it -- mcp_server.py builds
+an MCPServer instance at import time. Skip rather than error when
+it's not installed, the same way the CI environment doesn't have it.
+"""
+
+import pytest
+
+pytest.importorskip("mcp")
+
+from searchmux.adapters.mcp_server import _configured_providers  # noqa: E402
 
 
 def test_configured_providers_reads_all_four_keys(monkeypatch) -> None:
