@@ -36,6 +36,16 @@ All notable changes to this project are recorded here. The format follows [Keep 
   including for hand-written routers that don't accept a `providers`
   argument at all.
 
+### Measured
+
+- `python -m evals.provider_eval`, a head-to-head of SerpApi's
+  `google`, Tavily's `tavily_search`, and Exa's `exa_search` on 15
+  general web-search queries (Brave excluded, no key available). All
+  three succeeded on every query. Structural signals only — latency,
+  result count, snippet length — not a relevance judge; see the
+  README's Provider comparison section for the numbers and the
+  caveats.
+
 ## [0.2.0] — 2026-09-30
 
 ### Added

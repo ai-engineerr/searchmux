@@ -70,6 +70,24 @@ python -m evals.run_eval
 
 The two LLM arms cost money to run, so they are not pre-baked here — set `ANTHROPIC_API_KEY` and the same command scores all three. **The 52% figure is keyword retrieval alone, with no model involved**, which is the finding that justified skipping embeddings entirely.
 
+### Provider comparison
+
+Head-to-head on 15 general web-search queries, run live against SerpApi's `google` engine, Tavily's `tavily_search`, and Exa's `exa_search` — Brave excluded, no key available. This is a first, deliberately small pass (15 queries, not the 100+ a full study would use), and it measures structural signals — did anything come back, how fast, how many results, how much text per result — not which answer was actually *better*. That needs a human or an LLM judge and its own budget, which this pass doesn't spend. Treat it as a starting data point, not a verdict.
+
+| provider | n | success | avg latency | avg results | avg snippet chars |
+| --- | --- | --- | --- | --- | --- |
+| serpapi | 15 | 100% | 7992 ms | 7.9 | 144 |
+| tavily | 15 | 100% | 1581 ms | 9.5 | 1194 |
+| exa | 15 | 100% | 1970 ms | 9.8 | 498 |
+
+All three answered every query. SerpApi was markedly slower on this run (one query hit a timeout and retried, which pulls its average up — that's a real cost of the general-purpose `google` engine, not a fluke to explain away). Tavily's snippets are roughly 8x longer than SerpApi's on average — it returns cleaned page content, not a search-result snippet. Exa's average sits right at its own 500-character cap (`contents.text.maxCharacters`, set in `ExaBackend` to bound context-window cost), confirming that cap is doing what it's supposed to.
+
+Reproduce it, real cost on all three providers:
+
+```bash
+python -m evals.provider_eval
+```
+
 ---
 
 ## Install
