@@ -2,6 +2,16 @@
 
 SERPAPI_BASE_URL = "https://serpapi.com/search"
 ENV_API_KEY = "SERPAPI_API_KEY"
+
+TAVILY_BASE_URL = "https://api.tavily.com/search"
+ENV_TAVILY_KEY = "TAVILY_API_KEY"
+
+BRAVE_BASE_URL = "https://api.search.brave.com/res/v1/web/search"
+ENV_BRAVE_KEY = "BRAVE_API_KEY"
+
+EXA_BASE_URL = "https://api.exa.ai/search"
+ENV_EXA_KEY = "EXA_API_KEY"
+
 ENV_ANTHROPIC_KEY = "ANTHROPIC_API_KEY"
 
 DEFAULT_CACHE_PATH = ".searchmux.db"
