@@ -12,7 +12,13 @@ from dataclasses import asdict
 from mcp.server.mcpserver import MCPServer
 
 from searchmux.client import SearchMux
-from searchmux.constants import ENV_ANTHROPIC_KEY, ENV_API_KEY
+from searchmux.constants import (
+    ENV_ANTHROPIC_KEY,
+    ENV_API_KEY,
+    ENV_BRAVE_KEY,
+    ENV_EXA_KEY,
+    ENV_TAVILY_KEY,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -25,21 +31,38 @@ _searchmux: SearchMux | None = None
 def _client() -> SearchMux:
     """Return the module-level SearchMux, building it on first use.
 
-    A router is attached when ANTHROPIC_API_KEY is present. Without one
-    the `find` tool cannot resolve an engine from plain language, so it
-    raises a RoutingError naming the missing variable rather than
-    failing obscurely.
+    A router is attached when ANTHROPIC_API_KEY is present, restricted
+    to whichever providers actually have a key configured — so it can
+    never route to an engine this client has no key for. Without a
+    router the `find` tool cannot resolve an engine from plain
+    language, so it raises a RoutingError naming the missing variable
+    rather than failing obscurely.
 
     Returns:
-        A SearchMux client backed by the SERPAPI_API_KEY environment
-        variable, with a router when routing is configured.
+        A SearchMux client backed by whichever provider keys are set,
+        with a router when routing is configured.
     """
     global _searchmux
     if _searchmux is None:
         _searchmux = SearchMux(
-            api_key=os.getenv(ENV_API_KEY), router=_router()
+            api_key=os.getenv(ENV_API_KEY),
+            tavily_api_key=os.getenv(ENV_TAVILY_KEY),
+            brave_api_key=os.getenv(ENV_BRAVE_KEY),
+            exa_api_key=os.getenv(ENV_EXA_KEY),
+            router=_router(),
         )
     return _searchmux
+
+
+def _configured_providers() -> set[str]:
+    """Return provider names whose API key is set in the environment."""
+    pairs = {
+        "serpapi": ENV_API_KEY,
+        "tavily": ENV_TAVILY_KEY,
+        "brave": ENV_BRAVE_KEY,
+        "exa": ENV_EXA_KEY,
+    }
+    return {name for name, env_name in pairs.items() if os.getenv(env_name)}
 
 
 def _router() -> object | None:
@@ -56,7 +79,7 @@ def _router() -> object | None:
         return None
     from searchmux.router import Router
 
-    return Router()
+    return Router(providers=_configured_providers())
 
 
 @server.tool()

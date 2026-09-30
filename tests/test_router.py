@@ -199,3 +199,16 @@ def test_unknown_pair_name_is_dropped() -> None:
 def test_top_k_none_returns_every_engine() -> None:
     router = Router(llm=NullLLM(), top_k=None)
     assert len(router.retrieve("anything")) == len(router.engine_ids)
+
+
+def test_providers_filter_excludes_other_providers() -> None:
+    router = Router(llm=NullLLM(), providers={"serpapi"})
+    assert "tavily_search" not in router.engine_ids
+    assert "brave_search" not in router.engine_ids
+    assert "exa_search" not in router.engine_ids
+    assert "google" in router.engine_ids
+
+
+def test_providers_filter_none_keeps_every_engine() -> None:
+    router = Router(llm=NullLLM())
+    assert "tavily_search" in router.engine_ids
